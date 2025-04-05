@@ -1,9 +1,0 @@
-﻿state_trait_canales_patagonicos = {
-	# araucania
-	icon = "gfx/interface/icons/state_trait_icons/fjords.dds"
-	modifier = {
-		goods_output_wood_mult = 0.075
-		state_building_port_max_level_add = 1
-		state_building_naval_base_max_level_add = 10
-	}
-}

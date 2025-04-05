@@ -1,23 +1,24 @@
 ﻿building_government_administration = {
 	building_group = bg_bureaucracy
-	icon = "gfx/interface/icons/building_icons/building_government_administration.dds"
 	city_type = city
 	levels_per_mesh = 10
 	unlocking_technologies = {
 		tech_bureaucracy
 	}
 	should_auto_expand = {
-		occupancy >= 0.98
+		occupancy >= 0.8
 		building_has_goods_shortage = no
-		state.market_access > 0.8
 		OR = {
-			custom_tooltip = {
-				text = bureaucracy_percent
+			state.tax_capacity < state.tax_capacity_usage
+			AND = {
 				owner = {
-					bureaucracy_percent < 0.9
+					bureaucracy < -10
+				}
+				state.tax_capacity < {
+					add = state.tax_capacity_usage
+					add = 10
 				}
 			}
-			state.tax_capacity < state.tax_capacity_usage
 		}
 		NOT = {
 			is_under_construction = yes
@@ -25,8 +26,6 @@
 	}
 	production_method_groups = {
 		pmg_base_building_government_administration
-		USU_pmg_government_administration_emergency_services
-		USU_pmg_government_administration_law_enforcement
 		pmg_government_administration_bureaucrat_professionalism
 		pmg_government_administration_religious_administration
 		pmg_panum_hospital		#MORGENRÖTE

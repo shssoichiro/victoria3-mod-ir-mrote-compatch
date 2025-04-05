@@ -8,8 +8,6 @@
 	production_method_groups = {
 		pmg_base_building_railway
 		pmg_passenger_trains
-		pmg_logistics_services_railway
-		pmg_automation_building_railway
 		pmg_gaudi_communication		#MORGENRÖTE
 	}
 	required_construction = construction_cost_very_high
@@ -20,13 +18,6 @@
 			limit = {
 				owner = {
 					has_journal_entry = je_trans_siberian_railway
-				}
-				NOR = {
-					has_building = building_railway
-					any_scope_building = {
-						is_building_type = building_railway
-						is_under_construction = yes
-					}
 				}
 				OR = {
 					state_region = s:STATE_MOSCOW
