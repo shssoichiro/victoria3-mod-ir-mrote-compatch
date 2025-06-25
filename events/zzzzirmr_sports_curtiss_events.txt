@@ -1,0 +1,323 @@
+﻿#Curtiss 228: Thriving aircraft factories
+curtiss.228 = {
+	dlc = dlc_morgenrote
+	type = country_event
+	title = curtiss.228.t
+	desc = curtiss.228.d
+	flavor = curtiss.228.f
+	duration = 3
+	placement = scope:curtiss_factory_state
+	event_image = {
+		texture = "gfx/event_pictures/curtiss_pictures/curtiss_airline_usa_2.dds"
+	}
+	icon = "gfx/interface/icons/event_icons/event_aviation.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/unspecific/airplane"
+	cooldown = {
+		years = 5
+	}
+	trigger = {
+		curtiss_has_airline = yes
+		any_scope_state = {
+			has_building = building_airport
+			has_building = building_aircraft_industry
+			NOT = {
+				has_modifier = curtiss_thriving_aeroplane_factory_modifier
+			}
+		}
+	}
+	immediate = {
+		random_scope_state = {
+			limit = {
+				has_building = building_airport
+				has_building = building_aircraft_industry
+				NOT = {
+					has_modifier = curtiss_thriving_aeroplane_factory_modifier
+				}
+			}
+			save_scope_as = curtiss_factory_state
+		}
+	}
+	option = {
+		#A great day for aviation!
+		name = curtiss.228.g
+		default_option = yes
+		scope:curtiss_factory_state = {
+			add_modifier = {
+				name = curtiss_thriving_aeroplane_factory_modifier
+			}
+		}
+	}
+}
+
+#Curtiss 229: A new airplane factory
+curtiss.229 = {
+	dlc = dlc_morgenrote
+	type = country_event
+	title = curtiss.229.t
+	desc = curtiss.229.d
+	flavor = curtiss.229.f
+	duration = 3
+	placement = scope:curtiss_factory_state
+	gui_window = event_window_1char_tabloid
+	left_icon = scope:howard_hughes
+	icon = "gfx/interface/icons/event_icons/event_aviation.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/unspecific/airplane"
+	cooldown = {
+		years = 5
+	}
+	trigger = {
+		has_variable = curtiss_private_airline
+		var:curtiss_flight_route >= 9
+		any_scope_state = {
+			OR = {
+				has_modifier = curtiss_thriving_aviation_modifier
+				has_modifier = curtiss_expanded_airline_modifier
+			}
+			NOT = {
+				has_building = building_aircraft_industry
+			}
+		}
+		NOT = {
+			has_variable = curtiss_hughes_offered_industry
+		}
+	}
+	immediate = {
+		set_variable = curtiss_hughes_offered_industry
+		random_scope_state = {
+			limit = {
+				OR = {
+					has_modifier = curtiss_thriving_aviation_modifier
+					has_modifier = curtiss_expanded_airline_modifier
+				}
+				NOT = {
+					has_building = building_aircraft_industry
+				}
+			}
+			save_scope_as = curtiss_factory_state
+		}
+		curtiss_howard_hughes_effect = yes
+		ig:ig_industrialists = {
+			save_scope_as = ig_industrialists
+		}
+	}
+	option = {
+		#A great day for aviation!
+		name = curtiss.228.g
+		default_option = yes
+		scope:curtiss_factory_state = {
+			create_building = {
+				building = "building_aircraft_industry"
+				level = 2
+				reserves = 1
+			}
+			activate_building = {
+				building = "building_aircraft_industry"
+			}
+		}
+		scope:ig_industrialists = {
+			add_modifier = {
+				name = curtiss_approved_new_airplane_industry_modifier
+				years = 5
+			}
+		}
+		scope:howard_hughes = {
+			add_modifier = {
+				name = curtiss_airplane_constructor_modifier
+			}
+		}
+	}
+	option = {
+		#This is obviously a trap.
+		name = curtiss.229.h
+		default_option = yes
+		scope:ig_industrialists = {
+			add_modifier = {
+				name = curtiss_disapproved_new_airplane_industry_modifier
+				years = 5
+			}
+		}
+	}
+}
+
+#Curtiss 506: It flies! It really flies!
+curtiss.506 = {
+	dlc = dlc_morgenrote
+	type = country_event
+	title = curtiss.506.t
+	desc = curtiss.506.d
+	flavor = {
+		triggered_desc = {
+			trigger = {
+				has_variable = curtiss_sc_hughes
+			}
+			desc = curtiss.506.f_hughes
+		}
+		triggered_desc = {
+			trigger = {
+				has_variable = curtiss_sc_pilot
+			}
+			desc = curtiss.506.f_pilot
+		}
+		triggered_desc = {
+			trigger = {
+				has_variable = curtiss_sc_test
+			}
+			desc = curtiss.506.f_test
+		}
+	}
+	duration = 2
+	event_image = {
+		texture = "gfx/event_pictures/curtiss_pictures/curtiss_hercules_6.dds"
+	}
+	icon = "gfx/interface/icons/event_icons/event_aviation.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/unspecific/airplane"
+	trigger = {
+	}
+	immediate = {
+		set_variable = curtiss_aviator_achievement
+		curtiss_howard_hughes_effect = yes
+	}
+	option = {
+		#This is surprising...in a very positive way!
+		name = curtiss.506.g
+		default_option = yes
+		if = {
+			limit = {
+				has_variable = curtiss_sc_hughes
+			}
+			scope:howard_hughes = {
+				add_trait = curtiss_the_aviator
+			}
+			every_scope_state = {
+				limit = {
+					OR = {
+						has_building = building_airport
+						has_building = building_aircraft_industry
+					}
+				}
+				add_modifier = {
+					name = curtiss_airplane_revolution_modifier
+					years = 10
+				}
+			}
+			add_modifier = {
+				name = curtiss_spruce_goose_modifier
+			}
+		}
+		if = {
+			limit = {
+				has_variable = curtiss_sc_pilot
+			}
+			every_scope_state = {
+				limit = {
+					OR = {
+						has_building = building_airport
+						has_building = building_aircraft_industry
+					}
+				}
+				add_modifier = {
+					name = curtiss_airplane_revolution_modifier
+					years = 5
+				}
+			}
+			add_modifier = {
+				name = curtiss_spruce_goose_modifier
+			}
+		}
+		if = {
+			limit = {
+				has_variable = curtiss_sc_test
+			}
+			random_scope_state = {
+				limit = {
+					OR = {
+						has_building = building_airport
+						has_building = building_aircraft_industry
+					}
+				}
+				add_modifier = {
+					name = curtiss_airplane_revolution_modifier
+					years = 5
+				}
+			}
+		}
+	}
+}
+
+#Curtiss 510: The $COUNTRY$
+curtiss.510 = {
+	dlc = dlc_morgenrote
+	type = country_event
+	title = curtiss.510.t
+	desc = curtiss.510.d
+	flavor = curtiss.510.f
+	duration = 2
+	event_image = {
+		texture = "gfx/event_pictures/curtiss_pictures/curtiss_zeppelin.dds"
+	}
+	icon = "gfx/interface/icons/event_icons/event_zeppelin.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/unspecific/airship"
+	trigger = {
+	}
+	immediate = {
+	}
+	option = {
+		#A great vision!
+		name = curtiss.510.g
+		default_option = yes
+		random_scope_state = {
+			limit = {
+				any_scope_building = {
+					is_building_type = building_aircraft_industry
+				}
+			}
+			add_modifier = {
+				name = curtiss_zeppelin_wharf_modifier
+			}
+		}
+	}
+}
+
+#Curtiss 513: $COUNTRY$' disaster
+curtiss.513 = {
+	dlc = dlc_morgenrote
+	type = country_event
+	title = curtiss.513.t
+	desc = curtiss.513.d
+	flavor = curtiss.513.f
+	duration = 2
+	event_image = {
+		texture = "gfx/event_pictures/curtiss_pictures/curtiss_zeppelin_disaster.dds"
+	}
+	icon = "gfx/interface/icons/event_icons/event_zeppelin.dds"
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	trigger = {
+	}
+	immediate = {
+		remove_variable = curtiss_has_hindenburg_var
+		remove_modifier = curtiss_hindenburg_national_modifier
+		remove_modifier = curtiss_hindenburg_international_modifier
+	}
+	option = {
+		#A hard blow for the zeppelin industry.
+		name = curtiss.513.g
+		default_option = yes
+		add_modifier = {
+			name = curtiss_hindenburg_disaster_modifier
+			years = 5
+		}
+		random_scope_state = {
+			limit = {
+				any_scope_building = {
+					is_building_type = building_aircraft_industry
+					level >= 10
+				}
+			}
+			remove_modifier = curtiss_zeppelin_wharf_modifier
+		}
+	}
+}

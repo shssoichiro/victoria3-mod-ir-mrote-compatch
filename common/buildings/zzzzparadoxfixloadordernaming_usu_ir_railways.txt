@@ -118,9 +118,7 @@
 			limit = {
 				exists = c:RUS
 				c:RUS ?= owner
-				OR = {
-					region = sr:region_manchuria
-				}
+				region = sr:region_manchuria
 				any_scope_building = {
 					is_building_type = building_railway
 					levels_owned_by_country = {
@@ -146,23 +144,24 @@
 		}
 	}
 	should_auto_expand = {
-		# vanilla
 		occupancy >= 0.8
-		# subsidized OR profitable		
 		OR = {
 			is_subsidized = yes
 			AND = {
 				cash_reserves_ratio > 0.5
+				# added to avoid expanding if something has caused us
+				# to be unprofitable but our reserves haven't dwindled yet
 				weekly_profit > 0
 			}
 		}
 		state = {
 			OR = {
 				sg:transportation = {
+					# in base game this is 50%, we need to respond sooner. 33% is already expensive.
 					state_goods_pricier > 0.33
 				}
-				# checks infrastructure directly instead of market access which gets rid of some edge cases where you have low market access but enough infra
-				relative_infrastructure < 1
+				# in base game this is -20, we want railroads to expand sooner.
+				infrastructure_delta <= -1
 			}
 		}
 		# except if low on goods

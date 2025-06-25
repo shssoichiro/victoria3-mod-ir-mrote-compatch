@@ -1,0 +1,70 @@
+﻿mr_academics_change_to_military_school_sgui = {
+	scope = country
+	is_valid = {
+		custom_tooltip = {
+			text = MR_ACADEMICS_NO_MILITARY_OR_CONFUSION_TT
+			NOR = {
+				has_modifier = academics_national_academic_confusion_modifier
+				has_modifier = academics_military_industrial_complex_modifier
+			}
+		}
+		custom_tooltip = {
+			text = MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_TT
+			any_scope_building = {
+				filter = {
+					is_building_type = building_university
+				}
+				percent >= 0.5
+				has_active_production_method = pm_dubois_university_mathematics
+			}
+		}
+		custom_tooltip = {
+			text = MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT
+			any_scope_building = {
+				OR = {
+					AND = {
+						is_building_type = building_war_machine_industry
+						level >= 5
+					}
+					AND = {
+						is_building_type = building_arms_industry
+						level >= 5
+					}
+					AND = {
+						is_building_type = building_munition_plants
+						level >= 5
+					}
+					AND = {
+						is_building_type = building_artillery_foundries
+						level >= 5
+					}
+				}
+			}
+		}
+		custom_tooltip = {
+			text = MR_ACADEMICS_MILITARY_ARMY_SIZE_REQUIREMENT_TT
+			army_size >= 50
+		}
+		custom_tooltip = {
+			text = MR_ACADEMICS_MILITARY_GOVERNMENT_REQUIREMENT_TT
+			OR = {
+				ig:ig_armed_forces = {
+					is_in_government = yes
+				}
+				ig:ig_industrialists = {
+					is_in_government = yes
+				}
+			}
+		}
+	}
+	effect = {
+		academics_remove_focus = yes
+		add_modifier = {
+			name = academics_national_academic_confusion_modifier
+			years = 5
+		}
+		add_modifier = {
+			name = academics_military_industrial_complex_modifier
+		}
+	}
+}

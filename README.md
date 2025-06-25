@@ -2,6 +2,6 @@
 
 ![Preview](thumbnail.png)
 
-**Tested With V3 Version: 1.8.6**
+**Tested With V3 Version: 1.9.2**
 
 Fixes compatibility with Industry Realism and Morgenrote

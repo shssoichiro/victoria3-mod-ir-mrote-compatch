@@ -1,0 +1,77 @@
+﻿je_curtiss_lindbergh_generic = {
+	icon = "gfx/interface/icons/event_icons/event_aviation.dds"
+	group = je_group_curtiss_aviation
+	is_shown_when_inactive = {
+		has_technology_researched = military_aviation
+		exists = capital
+		capital = {
+			OR = {
+				region = sr:region_england
+				region = sr:region_france
+				region = sr:region_rhine
+				region = sr:region_new_england
+				region = sr:region_canada
+			}
+		}
+		NOT = {
+			exists = c:USA
+			this = c:USA
+		}
+	}
+	possible = {
+		has_technology_researched = curtiss_modern_aviation_tech
+	}
+	complete = {
+		game_date >= 1920.1.1
+		NOT = {
+			game_date >= 1927.1.1
+		}
+		any_scope_state = {
+			any_scope_building = {
+				is_building_type = building_airport
+			}
+		}
+		any_scope_state = {
+			any_scope_building = {
+				is_building_type = building_aircraft_industry
+			}
+		}
+		OR = {
+			any_scope_state = {
+				state_region = s:STATE_ILE_DE_FRANCE
+			}
+			any_country = {
+				has_diplomatic_pact = {
+					who = ROOT
+					type = airspace_convention
+				}
+				any_scope_state = {
+					state_region = s:STATE_ILE_DE_FRANCE
+				}
+			}
+		}
+		OR = {
+			any_scope_state = {
+				state_region = s:STATE_NEW_YORK
+			}
+			any_country = {
+				has_diplomatic_pact = {
+					who = ROOT
+					type = airspace_convention
+				}
+				any_scope_state = {
+					state_region = s:STATE_NEW_YORK
+				}
+			}
+		}
+	}
+	on_complete = {
+		trigger_event = {
+			id = curtiss.40
+			popup = yes
+		}
+	}
+	invalid = {
+		has_global_variable = curtiss_lindbergh_happened
+	}
+}

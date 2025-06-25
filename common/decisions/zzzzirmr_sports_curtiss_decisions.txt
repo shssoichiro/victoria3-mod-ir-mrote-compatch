@@ -1,0 +1,48 @@
+﻿curtiss_found_pilot_school_decision = {
+	is_shown = {
+		has_technology_researched = military_aviation
+		NOT = {
+			has_modifier = curtiss_pilot_school_modifier
+		}
+		is_ai = yes
+	}
+	possible = {
+		OR = {
+			curtiss_has_pilot_ace = yes
+			AND = {
+				var:curtiss_pilot_var ?= {
+					has_modifier = curtiss_schneider_veteran_modifier
+				}
+				any_scope_state = {
+					any_scope_building = {
+						is_building_type = building_aircraft_industry
+						level >= 3
+					}
+				}
+			}
+			AND = {
+				curtiss_has_pilot = yes
+				any_scope_state = {
+					any_scope_building = {
+						is_building_type = building_aircraft_industry
+						level >= 5
+					}
+				}
+				any_scope_state = {
+					any_scope_building = {
+						is_building_type = building_airport
+						level >= 2
+					}
+				}
+			}
+		}
+	}
+	when_taken = {
+		add_modifier = {
+			name = curtiss_pilot_school_modifier
+		}
+	}
+	ai_chance = {
+		value = 1000
+	}
+}

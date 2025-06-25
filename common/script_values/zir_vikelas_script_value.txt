@@ -1,9 +1,0 @@
-﻿vikelas_automobile_industry_score = {
-	value = 0
-	every_scope_building = {
-		limit = {
-			is_building_type = building_automobile_factories
-		}
-		add = level
-	}
-}

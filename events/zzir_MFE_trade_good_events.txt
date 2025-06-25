@@ -1,0 +1,141 @@
+﻿# Madman at the Tank Factory in [SCOPE.sS('tank_state').GetName]
+MFE_trade_good_events.6 = {
+	dlc = dlc_morgenrote
+	type = country_event
+	placement = scope:tank_state
+	title = "MFE_trade_good_events.6.t"
+	desc = "MFE_trade_good_events.6.d"
+	flavor = "MFE_trade_good_events.6.f"
+	duration = 3
+	icon = "gfx/interface/icons/event_icons/mobile_armor.dds"
+	minor_left_icon = g:tanks
+	minor_right_icon = g:tanks
+	event_image = {
+		video = "gfx/event_pictures/unspecific_devastation.bk2"
+	}
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/unspecific/destruction"
+	cooldown = {
+		months = very_long_cooldown
+	}
+	trigger = {
+		any_scope_building = {
+			is_building_type = building_war_machine_industryn
+			occupancy >= 0.5
+			level >= 1
+			level < 7
+		}
+	}
+	immediate = {
+		random_scope_building = {
+			limit = {
+				is_building_type = building_war_machine_industryn
+				occupancy >= 0.5
+				level >= 1
+				level < 7
+			}
+			save_scope_as = tank_factory
+			state = {
+				save_scope_as = tank_state
+			}
+		}
+	}
+	option = {
+		name = MFE_trade_good_events.6.a
+		default_option = yes
+		# Hopefully they get over it
+		scope:tank_state = {
+			add_modifier = {
+				name = MFE_tank_factory_destruction_mod
+				days = normal_modifier_time
+			}
+		}
+		scope:tank_factory = {
+			add_modifier = {
+				name = MFE_tank_factory_destruction_building_mod
+				days = normal_modifier_time
+			}
+		}
+		ai_chance = {
+			base = 1
+		}
+	}
+	option = {
+		name = MFE_trade_good_events.6.b
+		scope:tank_state = {
+			add_modifier = {
+				name = MFE_tank_factory_destruction_aid_sent_mod
+				days = short_modifier_time
+			}
+		}
+		scope:tank_factory = {
+			add_modifier = {
+				name = MFE_tank_factory_destruction_building_mod
+				days = short_modifier_time
+			}
+		}
+		add_modifier = {
+			name = MFE_sent_tank_destruction_aid_mod
+			days = short_modifier_time
+		}
+		ai_chance = {
+			base = 0
+			modifier = {
+				trigger = {
+					weekly_net_fixed_income > 2000
+				}
+				add = 2
+			}
+		}
+	}
+}
+
+# Private Planes bring Rich Investors in [SCOPE.sS('plane_state').GetName]
+MFE_trade_good_events.7 = {
+	dlc = dlc_morgenrote
+	type = country_event
+	placement = scope:plane_state
+	title = "MFE_trade_good_events.7.t"
+	desc = "MFE_trade_good_events.7.d"
+	flavor = "MFE_trade_good_events.7.f"
+	duration = 3
+	icon = "gfx/interface/icons/event_icons/event_aviation.dds"
+	event_image = {
+		video = "gfx/event_pictures/unspecific_airPlane.bk2"
+	}
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/unspecific/airplane"
+	cooldown = {
+		months = long_cooldown
+	}
+	trigger = {
+		any_scope_building = {
+			is_building_type = building_aircraft_industry
+			rich_building_trigger = yes
+			level >= 3
+		}
+	}
+	immediate = {
+		random_scope_building = {
+			limit = {
+				is_building_type = building_aircraft_industry
+				rich_building_trigger = yes
+				level >= 3
+			}
+			state = {
+				save_scope_as = plane_state
+			}
+		}
+	}
+	option = {
+		name = MFE_trade_good_events.7.a
+		default_option = yes
+		# It's a great time to live in [SCOPE.GetRootScope.GetCountry.GetName]
+		scope:plane_state = {
+			add_modifier = {
+				name = MFE_plane_investors_state_mod
+				days = normal_modifier_time
+			}
+		}
+	}
+}
