@@ -2,7 +2,7 @@
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/synthetics_plants.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	unlocking_technologies = {
 		aniline
 	}
@@ -14,8 +14,8 @@
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -28,7 +28,7 @@ building_rayon_plants = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/rayon_plants.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	unlocking_technologies = {
 		art_silk
 	}
@@ -40,8 +40,8 @@ building_rayon_plants = {
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -54,7 +54,7 @@ building_automotive_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/vehicles_industry.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	unlocking_technologies = {
 		combustion_engine
 	}
@@ -67,8 +67,8 @@ building_automotive_industry = {
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -81,7 +81,7 @@ building_war_machine_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/war_machines_industry.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	ai_nationalization_desire = 0.5	# AI generally does not want to privatize military goods industries
 	unlocking_technologies = {
 		mobile_armor
@@ -95,8 +95,8 @@ building_war_machine_industry = {
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -109,7 +109,7 @@ building_aircraft_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/aircraft_industry.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	ai_nationalization_desire = 0.5	# AI generally does not want to privatize military goods industries
 	unlocking_technologies = {
 		military_aviation
@@ -123,8 +123,8 @@ building_aircraft_industry = {
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -137,7 +137,7 @@ building_electrics_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/electrics_industry.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	unlocking_technologies = {
 		telephone
 	}
@@ -149,8 +149,8 @@ building_electrics_industry = {
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -163,7 +163,7 @@ building_radio_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/radio_industry.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	unlocking_technologies = {
 		radio
 	}
@@ -175,8 +175,8 @@ building_radio_industry = {
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -189,7 +189,7 @@ building_synthetic_rubber_plants = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/rubber_plants.dds"
 	city_type = city
-	levels_per_mesh = 5
+	levels_per_mesh = 50
 	unlocking_technologies = {
 		# it might be more accurate to make a new tech for this,
 		# but effort. this is close enough.
@@ -203,8 +203,8 @@ building_synthetic_rubber_plants = {
 		owner = {
 			NOT = {
 				OR = {
-					has_law = law_type:law_industry_banned
-					has_law = law_type:law_extraction_economy
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
 				}
 			}
 		}
@@ -219,7 +219,7 @@ building_synthetic_rubber_plants = {
 # 	building_group = bg_heavy_industry
 # 	icon = "gfx/interface/icons/building_icons/fuel_plants.dds"
 # 	city_type = city
-# 	levels_per_mesh = 5
+# 	levels_per_mesh = 50
 # 	unlocking_technologies = {
 # 		# it might be more accurate to make a new tech for this,
 # 		# but effort. this is close enough.
@@ -233,8 +233,8 @@ building_synthetic_rubber_plants = {
 # 		owner = {
 # 			NOT = {
 # 				OR = {
-# 					has_law = law_type:law_industry_banned
-# 					has_law = law_type:law_extraction_economy
+# 					has_law_or_variant = law_type:law_industry_banned
+# 					has_law_or_variant = law_type:law_extraction_economy
 # 				}
 # 			}
 # 		}
