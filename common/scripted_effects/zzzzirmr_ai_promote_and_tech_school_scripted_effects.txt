@@ -1,5 +1,5 @@
 ﻿#Handles the Tech Schools for the AI
-ai_choose_tech_school_effect = {
+REPLACE:ai_choose_tech_school_effect = {
 	if = {
 		#Only change the tech school if there is no active tech school yet.
 		limit = {
@@ -105,11 +105,11 @@ ai_choose_tech_school_effect = {
 								level >= 5
 							}
 							AND = {
-								is_building_type = building_munition_plants
+								is_building_type = building_munition_plant
 								level >= 5
 							}
 							AND = {
-								is_building_type = building_artillery_foundries
+								is_building_type = building_artillery_foundry
 								level >= 5
 							}
 						}
@@ -154,19 +154,19 @@ ai_choose_tech_school_effect = {
 					any_scope_building = {
 						OR = {
 							AND = {
-								is_building_type = building_textile_mills
+								is_building_type = building_textile_mill
 								level >= 15
 							}
 							AND = {
-								is_building_type = building_furniture_manufacturies
+								is_building_type = building_furniture_manufactory
 								level >= 15
 							}
 							AND = {
-								is_building_type = building_tooling_workshops
+								is_building_type = building_tooling_workshop
 								level >= 10
 							}
 							AND = {
-								is_building_type = building_steel_mills
+								is_building_type = building_steel_mill
 								level >= 10
 							}
 							AND = {

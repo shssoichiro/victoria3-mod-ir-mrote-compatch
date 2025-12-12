@@ -1,13 +1,14 @@
-﻿building_synthetics_plants = {
+﻿### Existing Buildings
+REPLACE:building_synthetics_plant = {
+	aliases = {
+		building_synthetics_plants
+	}
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/synthetics_plants.dds"
 	city_type = city
 	levels_per_mesh = 50
 	unlocking_technologies = {
 		aniline
-	}
-	production_method_groups = {
-		pmg_synthetic_dyes
 	}
 	required_construction = construction_cost_very_high
 	possible = {
@@ -22,9 +23,69 @@
 	}
 	ownership_type = self
 	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
+	# MODIFIED
+	production_method_groups = {
+		pmg_synthetic_dyes
+	}
 }
 
-building_rayon_plants = {
+REPLACE:building_automotive_industry = {
+	building_group = bg_heavy_industry
+	icon = "gfx/interface/icons/building_icons/vehicles_industry.dds"
+	city_type = city
+	levels_per_mesh = 50
+	unlocking_technologies = {
+		combustion_engine
+	}
+	required_construction = construction_cost_very_high
+	possible = {
+		owner = {
+			NOT = {
+				OR = {
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
+				}
+			}
+		}
+	}
+	ownership_type = self
+	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
+	# MODIFIED
+	production_method_groups = {
+		pmg_automobile_production
+		pmg_automation_building_automotive_industry
+	}
+}
+
+REPLACE:building_electrics_industry = {
+	building_group = bg_heavy_industry
+	icon = "gfx/interface/icons/building_icons/electrics_industry.dds"
+	city_type = city
+	levels_per_mesh = 50
+	unlocking_technologies = {
+		telephone
+	}
+	required_construction = construction_cost_very_high
+	possible = {
+		owner = {
+			NOT = {
+				OR = {
+					has_law_or_variant = law_type:law_industry_banned
+					has_law_or_variant = law_type:law_extraction_economy
+				}
+			}
+		}
+	}
+	ownership_type = self
+	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
+	# MODIFIED
+	production_method_groups = {
+		pmg_telephones_category
+	}
+}
+
+### New Buildings
+REPLACE_OR_CREATE:building_rayon_plant = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/rayon_plants.dds"
 	city_type = city
@@ -50,34 +111,7 @@ building_rayon_plants = {
 	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
 }
 
-building_automotive_industry = {
-	building_group = bg_heavy_industry
-	icon = "gfx/interface/icons/building_icons/vehicles_industry.dds"
-	city_type = city
-	levels_per_mesh = 50
-	unlocking_technologies = {
-		combustion_engine
-	}
-	production_method_groups = {
-		pmg_automobile_production
-		pmg_automation_building_automotive_industry
-	}
-	required_construction = construction_cost_very_high
-	possible = {
-		owner = {
-			NOT = {
-				OR = {
-					has_law_or_variant = law_type:law_industry_banned
-					has_law_or_variant = law_type:law_extraction_economy
-				}
-			}
-		}
-	}
-	ownership_type = self
-	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
-}
-
-building_war_machine_industry = {
+REPLACE_OR_CREATE:building_war_machine_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/war_machines_industry.dds"
 	city_type = city
@@ -105,7 +139,7 @@ building_war_machine_industry = {
 	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
 }
 
-building_aircraft_industry = {
+REPLACE_OR_CREATE:building_aircraft_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/aircraft_industry.dds"
 	city_type = city
@@ -133,33 +167,7 @@ building_aircraft_industry = {
 	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
 }
 
-building_electrics_industry = {
-	building_group = bg_heavy_industry
-	icon = "gfx/interface/icons/building_icons/electrics_industry.dds"
-	city_type = city
-	levels_per_mesh = 50
-	unlocking_technologies = {
-		telephone
-	}
-	production_method_groups = {
-		pmg_telephones_category
-	}
-	required_construction = construction_cost_very_high
-	possible = {
-		owner = {
-			NOT = {
-				OR = {
-					has_law_or_variant = law_type:law_industry_banned
-					has_law_or_variant = law_type:law_extraction_economy
-				}
-			}
-		}
-	}
-	ownership_type = self
-	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
-}
-
-building_radio_industry = {
+REPLACE_OR_CREATE:building_radio_industry = {
 	building_group = bg_heavy_industry
 	icon = "gfx/interface/icons/building_icons/radio_industry.dds"
 	city_type = city
@@ -184,61 +192,3 @@ building_radio_industry = {
 	ownership_type = self
 	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
 }
-
-building_synthetic_rubber_plants = {
-	building_group = bg_heavy_industry
-	icon = "gfx/interface/icons/building_icons/rubber_plants.dds"
-	city_type = city
-	levels_per_mesh = 50
-	unlocking_technologies = {
-		# it might be more accurate to make a new tech for this,
-		# but effort. this is close enough.
-		plastics
-	}
-	production_method_groups = {
-		pmg_synthetic_rubber
-	}
-	required_construction = construction_cost_very_high
-	possible = {
-		owner = {
-			NOT = {
-				OR = {
-					has_law_or_variant = law_type:law_industry_banned
-					has_law_or_variant = law_type:law_extraction_economy
-				}
-			}
-		}
-	}
-	ownership_type = self
-	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
-}
-
-# Morgenrote contains a synthetic fuel building,
-# so we will use theirs, since it ties into flavor events.
-# building_synthetic_fuel_plants = {
-# 	building_group = bg_heavy_industry
-# 	icon = "gfx/interface/icons/building_icons/fuel_plants.dds"
-# 	city_type = city
-# 	levels_per_mesh = 50
-# 	unlocking_technologies = {
-# 		# it might be more accurate to make a new tech for this,
-# 		# but effort. this is close enough.
-# 		electric_arc_process
-# 	}
-# 	production_method_groups = {
-# 		pmg_synthetic_fuel
-# 	}
-# 	required_construction = construction_cost_very_high
-# 	possible = {
-# 		owner = {
-# 			NOT = {
-# 				OR = {
-# 					has_law_or_variant = law_type:law_industry_banned
-# 					has_law_or_variant = law_type:law_extraction_economy
-# 				}
-# 			}
-# 		}
-# 	}
-# 	ownership_type = self
-# 	background = "gfx/interface/icons/building_icons/backgrounds/building_panel_bg_heavy_industry.dds"
-# }

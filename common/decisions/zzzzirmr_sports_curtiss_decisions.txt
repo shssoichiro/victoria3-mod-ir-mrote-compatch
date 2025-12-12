@@ -1,4 +1,4 @@
-﻿curtiss_found_pilot_school_decision = {
+﻿REPLACE:curtiss_found_pilot_school_decision = {
 	is_shown = {
 		has_technology_researched = military_aviation
 		NOT = {

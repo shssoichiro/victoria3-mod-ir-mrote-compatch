@@ -1,4 +1,4 @@
-﻿mr_academics_change_to_military_school_sgui = {
+﻿REPLACE:mr_academics_change_to_military_school_sgui = {
 	scope = country
 	is_valid = {
 		custom_tooltip = {
@@ -31,11 +31,11 @@
 						level >= 5
 					}
 					AND = {
-						is_building_type = building_munition_plants
+						is_building_type = building_munition_plant
 						level >= 5
 					}
 					AND = {
-						is_building_type = building_artillery_foundries
+						is_building_type = building_artillery_foundry
 						level >= 5
 					}
 				}

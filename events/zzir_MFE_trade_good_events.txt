@@ -1,4 +1,6 @@
-﻿# Madman at the Tank Factory in [SCOPE.sS('tank_state').GetName]
+﻿namespace = MFE_trade_good_events
+
+# Madman at the Tank Factory in [SCOPE.sS('tank_state').GetName]
 MFE_trade_good_events.6 = {
 	dlc = dlc_morgenrote
 	type = country_event
@@ -20,7 +22,7 @@ MFE_trade_good_events.6 = {
 	}
 	trigger = {
 		any_scope_building = {
-			is_building_type = building_war_machine_industryn
+			is_building_type = building_war_machine_industry
 			occupancy >= 0.5
 			level >= 1
 			level < 7
@@ -29,7 +31,7 @@ MFE_trade_good_events.6 = {
 	immediate = {
 		random_scope_building = {
 			limit = {
-				is_building_type = building_war_machine_industryn
+				is_building_type = building_war_machine_industry
 				occupancy >= 0.5
 				level >= 1
 				level < 7

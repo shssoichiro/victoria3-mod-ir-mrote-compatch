@@ -1,4 +1,4 @@
-﻿curtiss_company_basic_air_travel = {
+﻿REPLACE:curtiss_company_basic_air_travel = {
 	icon = "gfx/interface/icons/company_icons/curtiss_airline_generic_icon.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/curtiss_comp_illu_airline.dds"
 	uses_dynamic_naming = yes
@@ -7,9 +7,6 @@
 	}
 	building_types = {
 		building_airport
-	}
-	extension_building_types = {
-		building_aircraft_industry
 	}
 	possible_prestige_goods = {
 		prestige_good_generic_flights
@@ -25,7 +22,7 @@
 			is_incorporated = yes
 			any_scope_building = {
 				is_building_type = building_airport
-				level > 1
+				is_under_construction = no
 			}
 		}
 	}
@@ -37,14 +34,18 @@
 			is_incorporated = yes
 			any_scope_building = {
 				is_building_type = building_airport
-				level >= 1
+				is_under_construction = no
 			}
 		}
+	}
+	# MODIFIED
+	extension_building_types = {
+		building_aircraft_industry
 	}
 }
 
 # KLM
-curtiss_company_KLM = {
+REPLACE:curtiss_company_KLM = {
 	# First logo of the KLM, created in 1919: CC BY-SA 4.0 - Erpee - https://commons.wikimedia.org/wiki/File:KLM_logo_1919.svg
 	# Edited and changed slightly by Lord R
 	icon = "gfx/interface/icons/company_icons/curtiss_airline_klm_icon.dds"
@@ -56,9 +57,6 @@ curtiss_company_KLM = {
 	}
 	building_types = {
 		building_airport
-	}
-	extension_building_types = {
-		building_aircraft_industry
 	}
 	possible_prestige_goods = {
 		prestige_good_generic_flights
@@ -84,7 +82,7 @@ curtiss_company_KLM = {
 			is_incorporated = yes
 			any_scope_building = {
 				is_building_type = building_airport
-				level > 1
+				is_under_construction = no
 			}
 		}
 	}
@@ -112,10 +110,14 @@ curtiss_company_KLM = {
 	ai_weight = {
 		value = 3		# Higher base value for flavored companies
 	}
+	# MODIFIED
+	extension_building_types = {
+		building_aircraft_industry
+	}
 }
 
 # Deutsche Luftreederei
-curtiss_company_DLR = {
+REPLACE:curtiss_company_DLR = {
 	icon = "gfx/interface/icons/company_icons/curtiss_airline_dlr_icon.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/curtiss_comp_illu_airline.dds"
 	flavored_company = yes
@@ -124,9 +126,6 @@ curtiss_company_DLR = {
 	}
 	building_types = {
 		building_airport
-	}
-	extension_building_types = {
-		building_aircraft_industry
 	}
 	possible_prestige_goods = {
 		prestige_good_generic_flights
@@ -155,7 +154,7 @@ curtiss_company_DLR = {
 			is_incorporated = yes
 			any_scope_building = {
 				is_building_type = building_airport
-				level > 1
+				is_under_construction = no
 			}
 		}
 	}
@@ -187,10 +186,14 @@ curtiss_company_DLR = {
 	ai_weight = {
 		value = 3		# Higher base value for flavored companies
 	}
+	# MODIFIED
+	extension_building_types = {
+		building_aircraft_industry
+	}
 }
 
 # Imperial Airways
-curtiss_company_imperial_airways = {
+REPLACE:curtiss_company_imperial_airways = {
 	icon = "gfx/interface/icons/company_icons/curtiss_airline_imperial_airways_icon.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/curtiss_comp_illu_airline.dds"
 	flavored_company = yes
@@ -199,9 +202,6 @@ curtiss_company_imperial_airways = {
 	}
 	building_types = {
 		building_airport
-	}
-	extension_building_types = {
-		building_aircraft_industry
 	}
 	possible_prestige_goods = {
 		prestige_good_generic_flights
@@ -224,7 +224,7 @@ curtiss_company_imperial_airways = {
 			is_incorporated = yes
 			any_scope_building = {
 				is_building_type = building_airport
-				level > 1
+				is_under_construction = no
 			}
 		}
 	}
@@ -250,10 +250,14 @@ curtiss_company_imperial_airways = {
 	ai_weight = {
 		value = 3		# Higher base value for flavored companies
 	}
+	# MODIFIED
+	extension_building_types = {
+		building_aircraft_industry
+	}
 }
 
 # Air France
-curtiss_company_air_france = {
+REPLACE:curtiss_company_air_france = {
 	icon = "gfx/interface/icons/company_icons/curtiss_airline_air_france_icon.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/curtiss_comp_illu_airline.dds"
 	flavored_company = yes
@@ -262,9 +266,6 @@ curtiss_company_air_france = {
 	}
 	building_types = {
 		building_airport
-	}
-	extension_building_types = {
-		building_aircraft_industry
 	}
 	possible_prestige_goods = {
 		prestige_good_generic_flights
@@ -287,7 +288,7 @@ curtiss_company_air_france = {
 			is_incorporated = yes
 			any_scope_building = {
 				is_building_type = building_airport
-				level > 1
+				is_under_construction = no
 			}
 		}
 	}
@@ -312,10 +313,14 @@ curtiss_company_air_france = {
 	ai_weight = {
 		value = 3		# Higher base value for flavored companies
 	}
+	# MODIFIED
+	extension_building_types = {
+		building_aircraft_industry
+	}
 }
 
 # Swissair
-curtiss_company_swissair = {
+REPLACE:curtiss_company_swissair = {
 	icon = "gfx/interface/icons/company_icons/curtiss_airline_swissair_icon.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/curtiss_comp_illu_airline.dds"
 	flavored_company = yes
@@ -324,9 +329,6 @@ curtiss_company_swissair = {
 	}
 	building_types = {
 		building_airport
-	}
-	extension_building_types = {
-		building_aircraft_industry
 	}
 	possible_prestige_goods = {
 		prestige_good_generic_flights
@@ -349,7 +351,7 @@ curtiss_company_swissair = {
 			is_incorporated = yes
 			any_scope_building = {
 				is_building_type = building_airport
-				level > 1
+				is_under_construction = no
 			}
 		}
 	}
@@ -373,5 +375,9 @@ curtiss_company_swissair = {
 	}
 	ai_weight = {
 		value = 3		# Higher base value for flavored companies
+	}
+	# MODIFIED
+	extension_building_types = {
+		building_aircraft_industry
 	}
 }
