@@ -1,15 +1,4 @@
 ﻿### Use differently named building from MR
-REPLACE:building_synthetics_plant = {
-	possible = {
-		always = no
-	}
-	trigger = {
-		always = no
-	}
-	weight = 0
-}
-
-### Use differently named building from MR
 REPLACE:building_synthetic_rubber_plant = {
 	possible = {
 		always = no
