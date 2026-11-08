@@ -1,0 +1,67 @@
+﻿#by Marco Dandolo
+
+namespace = gaudi
+
+#Gaudí 1424: First Radio Program
+gaudi.1424 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+
+	placement = scope:gaudi_radio_state
+
+	title = gaudi.1424.t
+	desc = gaudi.1424.d
+	flavor = gaudi.1424.f
+
+	event_image = {
+		texture = "gfx/event_pictures/gaudi_pictures/gaudi_engineering_electrical_radio.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/radio.dds"
+
+	trigger = {
+		NOT = {
+			has_variable = gaudi_first_radio_program_var
+		}
+		any_scope_state = {
+			any_scope_building = {
+				is_building_type = building_tesla_telegraph
+				has_active_production_method = pm_tesla_radio_station
+			}
+			any_scope_building = {
+				is_building_type = building_radio_industry
+			}
+			percent >= 0.2
+		}
+	}
+
+	immediate = {
+		set_variable = gaudi_first_radio_program_var
+		random_scope_state = {
+			limit = {
+				any_scope_building = {
+					is_building_type = building_tesla_telegraph
+					has_active_production_method = pm_tesla_radio_station
+				}
+				any_scope_building = {
+					is_building_type = building_radio_industry
+				}
+			}
+			save_scope_as = gaudi_radio_state
+		}
+	}
+
+	option = {
+		name = gaudi.1424.g #A radio in every house?
+		default_option = yes
+		scope:gaudi_radio_state = {
+			add_modifier = {
+				name = gaudi_radio_mania_modifier
+				years = 10
+			}
+		}
+	}
+}

@@ -141,3 +141,83 @@ MFE_trade_good_events.7 = {
 		}
 	}
 }
+
+# From MR events/MFE/MFE_trade_good_events.txt
+# Hardwood in [SCOPE.sS('hardwood_state').GetName] is extremely hard
+MFE_trade_good_events.14 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+	placement = scope:hardwood_state
+	title = "MFE_trade_good_events.14.t"
+	desc = "MFE_trade_good_events.14.d"
+	flavor = "MFE_trade_good_events.14.f"
+	duration = 3
+	icon = "gfx/interface/icons/event_icons/unit_attack.dds"
+	event_image = {
+		video = "europenorthamerica_gold_prospectors"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/europenorthamerica/gold_prospectors"
+
+	cooldown = { months = very_long_cooldown }
+	trigger = {
+		any_scope_building = {
+			is_building_type = building_logging_camp
+			modifier:goods_output_hardwood_add > 0
+			level >= 5
+		}
+	}
+
+	immediate = {
+		random_scope_building = {
+			limit = {
+				is_building_type = building_logging_camp
+				modifier:goods_output_hardwood_add > 0
+				level >= 5
+			}
+			state = {
+				save_scope_as = hardwood_state
+			}
+		}
+	}
+
+	option = {
+		name = MFE_trade_good_events.14.a
+		default_option = yes
+		scope:hardwood_state = {
+			random_scope_building = {
+				limit = {
+					is_building_type = building_logging_camp
+					modifier:goods_output_hardwood_add > 0
+					level >= 5
+				}
+
+				add_modifier = {
+					name = MFE_very_hard_wood_mod
+					days = normal_modifier_time
+				}
+			}
+		}
+	}
+
+	option = {
+		name = MFE_trade_good_events.14.b
+		default_option = yes
+		trigger = {
+			any_scope_building = {
+				is_building_type = building_instrument_workshops
+			}
+		}
+		random_scope_building = {
+			limit = {
+				is_building_type = building_instrument_workshops
+			}
+			add_modifier = {
+				name = MFE_great_instruments_mod
+				days = normal_modifier_time
+			}
+		}
+	}
+}

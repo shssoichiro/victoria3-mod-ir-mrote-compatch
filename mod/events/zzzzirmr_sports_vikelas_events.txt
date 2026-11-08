@@ -1,0 +1,63 @@
+﻿#by Lord R & Marco Dandolo
+
+namespace = vikelas
+
+#Vikelas 312: Sports Radio
+vikelas.312 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+
+	title = vikelas.312.t
+	desc = vikelas.312.d
+	flavor = vikelas.312.f
+
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/vikelas_pictures/vikelas_gazetta.dds"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_sports.dds"
+
+	trigger = {
+		NOT = {
+			has_variable = vikelas_sports_radio_var
+		}
+		has_technology_researched = radio
+		manzoni_has_printing_industry = yes
+		any_scope_state = {
+			any_scope_building = {
+				is_building_type = building_radio_industry
+				is_under_construction = no
+				has_active_production_method = pm_radios
+			}
+		}
+	}
+
+	immediate = {
+		set_variable = vikelas_sports_radio_var
+		random_scope_state = {
+			limit = {
+				any_scope_building = {
+					is_building_type = building_radio_industry
+					is_under_construction = no
+					has_active_production_method = pm_radios
+				}
+			}
+			save_scope_as = vikelas_radio_state
+		}
+	}
+
+	option = {
+		name = vikelas.312.g #
+		default_option = yes
+		scope:vikelas_radio_state = {
+			add_modifier = {
+				name = vikelas_sports_radio_modifier
+			}
+		}
+	}
+}

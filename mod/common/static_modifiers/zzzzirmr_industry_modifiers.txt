@@ -1,0 +1,12 @@
+﻿# From MR common/static_modifiers/MFE_mods.txt
+REPLACE:radio_component_shortage_mod = {
+	icon = gfx/interface/icons/timed_modifier_icons/modifier_gear_negative.dds
+	building_radio_industry_throughput_add = -0.1
+}
+
+# From MR common/static_modifiers/mr_science_tesla_modifiers.txt
+#by Marco Dandolo & Lord R
+REPLACE:gaudi_radio_mania_modifier = {
+	icon = "gfx/interface/icons/timed_modifier_icons/modifier_gear_positive.dds"
+	building_radio_industry_throughput_add = 0.1
+}

@@ -537,6 +537,130 @@ def check_silk_suppression_absence() -> None:
                 raise AssertionError(f"{path}: removed synthetics suppression returned")
 
 
+def industry_delta(items: list[str], name: str) -> list[str]:
+    """Allow only counted industry corrections and three current video aliases."""
+    if name == "MFE_workplace_events.17":
+        items = rewrite(
+            items,
+            '"is_building_type = building_furniture_manufactory NOT = { '
+            'has_active_production_method = pm_no_luxuries } level >= 5"',
+            '"is_building_type = building_luxury_furniture_manufactory level >= 5"',
+            2,
+        )
+    elif name == "MFE_trade_good_events.14":
+        items = rewrite(
+            items, "has_active_production_method = pm_hardwood",
+            "is_building_type = building_logging_camp "
+            "modifier:goods_output_hardwood_add > 0", 3,
+        )
+    elif name in ("radio_component_shortage_mod", "gaudi_radio_mania_modifier"):
+        return rewrite(
+            items, "building_electrics_industry_throughput_add",
+            "building_radio_industry_throughput_add", 1,
+        )
+    else:
+        items = rewrite(
+            items, "building_electrics_industry", "building_radio_industry", 2,
+        )
+    aliases = {
+        "MFE_workplace_events.17": "southamerica_aristocrats",
+        "MFE_workplace_events.20": "unspecific_world_fair",
+        "MFE_trade_good_events.14": "europenorthamerica_gold_prospectors",
+    }
+    if name in aliases:
+        alias = aliases[name]
+        items = rewrite(
+            items, f'"gfx/event_pictures/{alias}.bk2"', f'"{alias}"', 1,
+        )
+    return items
+
+
+def check_industry_predicates(path: Path, name: str) -> None:
+    """Pin each eligibility/selection/option gate without simulating game scopes."""
+    actual = source(path, name)
+    trigger = one_block(actual, "trigger")
+    immediate = one_block(actual, "immediate")
+    if name == "MFE_workplace_events.17":
+        predicate = tokens(
+            'T = "is_building_type = building_luxury_furniture_manufactory '
+            'level >= 5" K = "2"',
+        )
+        equal(one_block(trigger, "MFE_country_has_building_trigger"), predicate)
+        selection = one_block(one_block(immediate, "random_scope_state"), "limit")
+        equal(one_block(selection, "MFE_state_has_building_trigger"), predicate)
+    elif name in ("vikelas.312", "gaudi.1424"):
+        eligible = one_block(trigger, "any_scope_state")
+        selection = one_block(one_block(immediate, "random_scope_state"), "limit")
+        for state in (eligible, selection):
+            if name == "vikelas.312":
+                contains(
+                    state, "any_scope_building = { "
+                    "is_building_type = building_radio_industry "
+                    "is_under_construction = no "
+                    "has_active_production_method = pm_radios }",
+                )
+            else:
+                contains(
+                    state, "any_scope_building = { "
+                    "is_building_type = building_radio_industry }",
+                )
+                contains(
+                    state, "any_scope_building = { "
+                    "is_building_type = building_tesla_telegraph "
+                    "has_active_production_method = pm_tesla_radio_station }",
+                )
+        if name == "gaudi.1424":
+            contains(eligible, "percent >= 0.2")
+    else:
+        eligible = one_block(trigger, "any_scope_building")
+        selection = one_block(one_block(immediate, "random_scope_building"), "limit")
+        if name == "MFE_workplace_events.20":
+            predicate = tokens(
+                "is_building_type = building_radio_industry occupancy > 0.75 "
+                "cash_reserves_ratio > 0.25 weekly_profit > 0 level >= 5 "
+                "has_active_production_method = pm_radios",
+            )
+            contains(trigger, "has_technology_researched = radio")
+            contains(trigger, "any_scope_war = { count > 0 }")
+        else:
+            predicate = tokens(
+                "is_building_type = building_logging_camp "
+                "modifier:goods_output_hardwood_add > 0 level >= 5",
+            )
+            options = [body for key, body in blocks(actual) if key == "option"]
+            equal([str(len(options))], ["2"])
+            state = one_block(options[0], "scope:hardwood_state")
+            equal(
+                one_block(one_block(state, "random_scope_building"), "limit"),
+                predicate,
+            )
+            contains(
+                one_block(options[1], "trigger"), "any_scope_building = { "
+                "is_building_type = building_instrument_workshops }",
+            )
+            equal(
+                one_block(one_block(options[1], "random_scope_building"), "limit"),
+                tokens("is_building_type = building_instrument_workshops"),
+            )
+        equal(eligible, predicate)
+        equal(selection, predicate)
+
+
+def check_script_scope(
+    path: Path, names: tuple[str, ...], namespace: str = "", *, bom: bool = True,
+) -> None:
+    """Own only the listed definitions/namespace and require BOM on new scripts."""
+    data = path.read_bytes()
+    if bom and not data.startswith(b"\xef\xbb\xbf"):
+        raise AssertionError("new script must use UTF-8 BOM")
+    items = tokens(data.decode("utf-8-sig"))
+    definitions = blocks(items)
+    equal([name for name, _ in definitions], list(names))
+    for name, body in definitions:
+        items = rewrite(items, f"{name} = {{ {' '.join(body)} }}", "", 1)
+    equal(items, tokens(f"namespace = {namespace}" if namespace else ""))
+
+
 def check_locale(language: str, mr: Path) -> None:
     """Preserve translations, single-building scope and MR's uranium PM name."""
     path = MOD / f"localization/{language}/zzirmr_{language}.yml"
@@ -760,6 +884,110 @@ def main() -> int:
             "events/MFE/MFE_trade_good_events.txt", f"MFE_trade_good_events.{number}",
             lambda items, n=number: trade_delta(items, n),
         ))
+    for patch_file, upstream_file, name in (
+        (
+            "events/zzzzirmr_sports_vikelas_events.txt",
+            "events/sports/vikelas_events.txt", "vikelas.312",
+        ),
+        (
+            "events/zzzzirmr_arts_gaudi_events.txt",
+            "events/arts/gaudi_events.txt", "gaudi.1424",
+        ),
+        *(
+            (
+                "events/zzzzirmr_MFE_workplace_events.txt",
+                "events/MFE/MFE_workplace_events.txt", f"MFE_workplace_events.{n}",
+            )
+            for n in (17, 20)
+        ),
+        (
+            "events/zzir_MFE_trade_good_events.txt",
+            "events/MFE/MFE_trade_good_events.txt", "MFE_trade_good_events.14",
+        ),
+        (
+            "common/static_modifiers/zzzzirmr_industry_modifiers.txt",
+            "common/static_modifiers/MFE_mods.txt", "radio_component_shortage_mod",
+        ),
+        (
+            "common/static_modifiers/zzzzirmr_industry_modifiers.txt",
+            "common/static_modifiers/mr_science_tesla_modifiers.txt",
+            "gaudi_radio_mania_modifier",
+        ),
+    ):
+        cases.append((
+            patch_file, upstream_file, name,
+            lambda items, n=name: industry_delta(items, n),
+        ))
+        if patch_file.startswith("events/"):
+            check(
+                f"{name} / corrected industry eligibility, selection and options",
+                lambda p=patch_file, n=name: check_industry_predicates(MOD / p, n),
+            )
+    for name, value in (
+        ("radio_component_shortage_mod", "-0.1"),
+        ("gaudi_radio_mania_modifier", "0.1"),
+    ):
+        check(
+            f"{name} / exact radio throughput {value}",
+            lambda n=name, v=value: contains(
+                source(
+                    MOD / "common/static_modifiers/zzzzirmr_industry_modifiers.txt",
+                    "REPLACE:" + n,
+                ),
+                f"building_radio_industry_throughput_add = {v}",
+            ),
+        )
+    for filename, names, namespace, bom in (
+        (
+            "events/zzzzirmr_sports_vikelas_events.txt", ("vikelas.312",),
+            "vikelas", True,
+        ),
+        (
+            "events/zzzzirmr_arts_gaudi_events.txt", ("gaudi.1424",), "gaudi", True,
+        ),
+        (
+            "events/zzzzirmr_MFE_workplace_events.txt",
+            ("MFE_workplace_events.17", "MFE_workplace_events.20"),
+            "MFE_workplace_events", True,
+        ),
+        (
+            "events/zzir_MFE_trade_good_events.txt",
+            tuple(f"MFE_trade_good_events.{n}" for n in (6, 7, 14)),
+            "MFE_trade_good_events", False,
+        ),
+        (
+            "common/static_modifiers/zzzzirmr_industry_modifiers.txt",
+            ("REPLACE:radio_component_shortage_mod", "REPLACE:gaudi_radio_mania_modifier"),
+            "", True,
+        ),
+    ):
+        check(
+            f"{filename} / exact definition scope, namespace and encoding",
+            lambda f=filename, n=names, ns=namespace, b=bom: check_script_scope(
+                MOD / f, n, ns, bom=b,
+            ),
+        )
+    for patch_name, name, game_file, game_name in (
+        (
+            "zzzzirmr_MFE_workplace_events.txt", "MFE_workplace_events.17",
+            "treaty_of_london_events.txt", "treaty_of_london_events.1",
+        ),
+        (
+            "zzzzirmr_MFE_workplace_events.txt", "MFE_workplace_events.20",
+            "grand_exhibition_events.txt", "exhibition_events.1",
+        ),
+        (
+            "zzir_MFE_trade_good_events.txt", "MFE_trade_good_events.14",
+            "gold_rush.txt", "goldrush.1",
+        ),
+    ):
+        check(
+            f"{name} / video alias matches supplied 1.15 game",
+            lambda p=patch_name, n=name, f=game_file, g=game_name: equal(
+                one_block(source(MOD / "events" / p, n), "event_image"),
+                one_block(source(args.game / "events" / f, g), "event_image"),
+            ),
+        )
     loaders = set()
     for patch_file, upstream_file, name, transform in cases:
         patch, upstream = MOD / patch_file, args.mr / upstream_file

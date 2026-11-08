@@ -1,0 +1,146 @@
+﻿namespace = MFE_workplace_events
+
+# Based on https://github.com/Historical-Expansion-Mod/Greater-Flavor-Mod/blob/master/GFM/events/WorkPlaceEvents.txt
+
+# Elegant furniture - has level 5 furniture manufactury, get mod
+MFE_workplace_events.17 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+	placement = scope:luxury_state
+	title = MFE_workplace_events.17.t
+	desc = MFE_workplace_events.17.d
+	flavor = MFE_workplace_events.17.f
+
+	cooldown = { months = long_cooldown }
+
+	duration = 3
+
+	event_image = {
+		video = "southamerica_aristocrats"
+	}
+
+	icon = "gfx/interface/icons/event_icons/event_industry.dds"
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/southamerica/aristocrats"
+
+	trigger = {
+		MFE_country_has_building_trigger = {
+			T = "is_building_type = building_luxury_furniture_manufactory level >= 5"
+			K = "2"
+		}
+		#leading_producer_of = g:luxury_furniture
+	}
+
+	immediate = {
+		random_scope_state = {
+			limit = {
+				MFE_state_has_building_trigger = {
+					T = "is_building_type = building_luxury_furniture_manufactory level >= 5"
+					K = "2"
+				}
+			}
+			save_scope_as = luxury_state
+		}
+	}
+
+	option = { # throughput
+		name = MFE_workplace_events.17.a
+		default_option = yes
+		scope:luxury_state = {
+			add_modifier = {
+				name = elegant_furniture_mod
+				days = short_modifier_time
+			}
+		}
+	}
+	option = { # Upper Strata Sol
+		name = MFE_workplace_events.17.b
+		scope:luxury_state = {
+			add_modifier = {
+				name = elegant_furniture_sol_mod
+				days = short_modifier_time
+			}
+		}
+	}
+}
+
+# Radio [SCOPE.sState('radio_state').GetName]
+MFE_workplace_events.20 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+	placement = scope:radio_state
+	title = MFE_workplace_events.20.t
+	desc = MFE_workplace_events.20.d
+	flavor = MFE_workplace_events.20.f
+
+	duration = 3
+
+	event_image = {
+		video = "unspecific_world_fair"
+	}
+
+	icon = "gfx/interface/icons/event_icons/event_newspaper.dds"
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	on_opened_soundeffect = "event:/SFX/Events/unspecific/world_fair"
+
+	trigger = {
+		has_technology_researched = radio
+		any_scope_building = {
+			is_building_type = building_radio_industry
+			occupancy > 0.75
+			cash_reserves_ratio > 0.25
+			weekly_profit > 0
+			level >= 5
+			has_active_production_method = pm_radios
+		}
+		any_scope_war = {
+			count > 0
+		}
+	}
+
+	immediate = {
+		random_scope_building = {
+			limit = {
+				is_building_type = building_radio_industry
+				occupancy > 0.75
+				cash_reserves_ratio > 0.25
+				weekly_profit > 0
+				level >= 5
+				has_active_production_method = pm_radios
+			}
+			state = {
+				save_scope_as = radio_state
+			}
+			add_modifier = {
+				name = radio_component_shortage_mod
+				days = long_modifier_time
+			}
+		}
+	}
+
+	option = { # We have none to spare
+		name = MFE_workplace_events.20.a
+		default_option = yes
+		scope:radio_state = {
+			add_radicals_in_state = {
+				value = medium_radicals
+			}
+		}
+	}
+	option = { # Give them the radios
+		name = MFE_workplace_events.20.b
+		add_modifier = {
+			name = supporting_state_with_radio_components_mod
+			days = long_modifier_time
+		}
+		scope:radio_state = {
+			add_loyalists_in_state = {
+				value = medium_radicals
+			}
+		}
+	}
+}
