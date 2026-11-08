@@ -17,6 +17,7 @@
 		building_radio_industry
 	}
 	extension_building_types = {
+		building_copper_mine
 		building_iron_mine
 		building_rubber_plantation
 		building_mendelejew_synthetic_rubber_factory

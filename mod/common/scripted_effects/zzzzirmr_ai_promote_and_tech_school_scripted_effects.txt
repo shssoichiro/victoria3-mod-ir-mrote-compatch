@@ -101,6 +101,10 @@ REPLACE:ai_choose_tech_school_effect = {
 								level >= 5
 							}
 							AND = {
+								is_building_type = building_aircraft_industry
+								level >= 5
+							}
+							AND = {
 								is_building_type = building_arms_industry
 								level >= 5
 							}

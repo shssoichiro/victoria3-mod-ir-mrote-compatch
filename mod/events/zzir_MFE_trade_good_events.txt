@@ -13,7 +13,7 @@ MFE_trade_good_events.6 = {
 	minor_left_icon = g:tanks
 	minor_right_icon = g:tanks
 	event_image = {
-		video = "gfx/event_pictures/unspecific_devastation.bk2"
+		video = "unspecific_devastation"
 	}
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	on_opened_soundeffect = "event:/SFX/Events/unspecific/destruction"
@@ -84,7 +84,7 @@ MFE_trade_good_events.6 = {
 			base = 0
 			modifier = {
 				trigger = {
-					weekly_net_fixed_income > 2000
+					net_fixed_income > 2000
 				}
 				add = 2
 			}
@@ -103,7 +103,7 @@ MFE_trade_good_events.7 = {
 	duration = 3
 	icon = "gfx/interface/icons/event_icons/event_aviation.dds"
 	event_image = {
-		video = "gfx/event_pictures/unspecific_airPlane.bk2"
+		video = "unspecific_airplane"
 	}
 	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
 	on_opened_soundeffect = "event:/SFX/Events/unspecific/airplane"
