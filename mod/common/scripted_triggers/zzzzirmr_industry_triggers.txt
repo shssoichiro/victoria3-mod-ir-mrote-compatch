@@ -1,4 +1,4 @@
-# From IR common/scripted_triggers/zir_scripted_triggers.txt; include MR factories.
+﻿# From IR common/scripted_triggers/zir_scripted_triggers.txt; include MR factories.
 REPLACE:has_heavy_industry_building = {
 	OR = {
 		has_building = building_chemical_plant

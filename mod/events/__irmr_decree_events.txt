@@ -1,4 +1,4 @@
-# From IR events/_ir_decree_events.txt; include MR factories in both factory lists.
+﻿# From IR events/_ir_decree_events.txt; include MR factories in both factory lists.
 # COMPAT: First event definition wins; this filename must sort before IR's file.
 namespace = decree_events
 decree_events.100 = {

@@ -1,4 +1,4 @@
-# From IR common/laws/zir_economic_system.txt; retain all original removal targets.
+﻿# From IR common/laws/zir_economic_system.txt; retain all original removal targets.
 # MR factories are removed only by deliberate law activation, never by migration.
 REPLACE:law_industry_banned = {
 	group = lawgroup_economic_system

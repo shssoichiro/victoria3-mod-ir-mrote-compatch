@@ -1,4 +1,4 @@
-# From IR common/buildings/zir_industry.txt; append MR's optional glass conversion.
+﻿# From IR common/buildings/zir_industry.txt; append MR's optional glass conversion.
 REPLACE:building_glassworks = {
 	building_group = bg_light_industry
 	icon = "gfx/interface/icons/building_icons/glassworks.dds"

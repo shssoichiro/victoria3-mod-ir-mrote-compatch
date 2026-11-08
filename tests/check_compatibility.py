@@ -6,6 +6,7 @@ This deliberately extracts only tokens and named blocks, not game semantics.
 """
 
 import argparse
+import json
 import re
 import sys
 from collections.abc import Callable
@@ -217,6 +218,172 @@ def check_loader(patch: Path, upstream: Path, *, first_event: bool = False) -> N
         raise AssertionError("events must be in the patch's root events directory")
 
 
+def check_metadata() -> None:
+    """Advertise the approved game series without inventing dependency IDs."""
+    path = MOD / ".metadata/metadata.json"
+    actual = json.loads(path.read_text(encoding="utf-8"))
+    expected = {
+        "name": "[1.15] Industry Realism + Morgenrote Compatch",
+        "id": "", "version": "", "supported_game_version": "1.15.*",
+        "short_description": "", "tags": [], "relationships": [],
+        "game_custom_data": {"multiplayer_synchronized": True},
+    }
+    if actual != expected:
+        raise AssertionError(f"{path}: expected {expected!r}; got {actual!r}")
+
+
+def check_script_file(path: Path) -> None:
+    """Check every patch script, including files outside the comparison table."""
+    data = path.read_bytes()
+    if not data.startswith(b"\xef\xbb\xbf"):
+        raise AssertionError("script must use UTF-8 BOM")
+    items = tokens(data.decode("utf-8-sig"))
+    definitions = blocks(items)
+    if not definitions:
+        raise AssertionError("script has no definitions")
+    events = path.parent == MOD / "events"
+    namespaces = set()
+    for name, body in definitions:
+        if events:
+            if not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*\.\d+", name):
+                raise AssertionError(f"event requires bare namespace.number ID: {name}")
+            namespaces.add(name.split(".")[0])
+        elif not name.startswith("REPLACE:") and not (
+            path.parent == MOD / "common/production_method_groups"
+            and name == URANIUM_GROUP
+        ):
+            raise AssertionError(f"existing database override requires REPLACE: {name}")
+        items = rewrite(items, f"{name} = {{ {' '.join(body)} }}", "", 1)
+    expected = tokens(" ".join(f"namespace = {n}" for n in sorted(namespaces)))
+    equal(items, expected)
+
+
+def definition_ids(
+    root: Path, folder: str, *, include_injections: bool = False,
+) -> set[str]:
+    """Read declaration names only in a requested database, not upstream semantics."""
+    if not root.is_dir():
+        raise ValueError(f"source root is not a directory: {root}")
+    found = set()
+    for path in sorted((root / folder).rglob("*.txt")):
+        try:
+            definitions = blocks(tokens(path.read_text(encoding="utf-8-sig")))
+        except (OSError, UnicodeError, ValueError) as error:
+            raise ValueError(f"{path}: cannot scan declaration IDs: {error}") from error
+        for name, _ in definitions:
+            # An injection alone does not establish that its target exists.
+            if include_injections or ":" not in name or name.startswith((
+                "REPLACE:", "REPLACE_OR_CREATE:",
+            )):
+                found.add(name.rsplit(":", 1)[-1])
+    return found
+
+
+def check_targets(game: Path, ir: Path, mr: Path) -> None:
+    """Require unique patch IDs and real upstream targets per database category."""
+    seen = {}
+    upstream = {}
+    for path in sorted(MOD.rglob("*.txt")):
+        relative = path.relative_to(MOD)
+        folder = "events"
+        if relative.parts[0] == "common":
+            folder = str(Path(*relative.parts[:2]))
+        if folder not in upstream:
+            upstream[folder] = set().union(*(
+                definition_ids(root, folder) for root in (game, ir, mr)
+            ))
+        for raw, _ in blocks(tokens(path.read_text(encoding="utf-8-sig"))):
+            name = raw.rsplit(":", 1)[-1]
+            key = (folder, name)
+            if key in seen:
+                raise AssertionError(f"{path} / {name}: duplicate of {seen[key]}")
+            seen[key] = path
+            if folder == "common/production_method_groups" and raw == URANIUM_GROUP:
+                if name in upstream[folder]:
+                    raise AssertionError(f"{path} / {name}: new ID collides upstream")
+            elif name not in upstream[folder]:
+                raise AssertionError(f"{path} / {name}: no upstream target in {folder}")
+
+
+def check_references(game: Path, ir: Path, mr: Path) -> None:
+    """Resolve the integration's changed references, not every upstream reference."""
+    references = {
+        "buildings": {
+            "building_aircraft_industry", "building_war_machine_industry",
+            "building_radio_industry", "building_luxury_furniture_manufactory",
+            "building_logging_camp", "building_fruit_orchard", "building_glassworks",
+            "building_pottery_mill", *IR_SYNTHETICS, *MR_SYNTHETICS,
+        },
+        "production_methods": {
+            "pm_radios", "pm_tesla_radio_station", "pm_curie_uranium_glass",
+            "pm_disabled_ceramics", "pm_ceramics", "pm_bone_china",
+        },
+        "production_method_groups": {
+            "pmg_base_building_glassworks", "pmg_glassblowing",
+            "pmg_luxury_building_glassworks", URANIUM_GROUP,
+        },
+        "character_traits": {"tesla_aeronautical_engineer", "curtiss_the_aviator"},
+        "static_modifiers": {
+            "radio_component_shortage_mod", "gaudi_radio_mania_modifier",
+            "curtiss_water_airport_modifier", "curtiss_thriving_aeroplane_factory_modifier",
+            "curtiss_airplane_revolution_modifier", "curtiss_zeppelin_wharf_modifier",
+        },
+    }
+    for category, names in references.items():
+        folder = f"common/{category}"
+        available = set().union(*(
+            definition_ids(root, folder) for root in (game, ir, mr, MOD)
+        ))
+        missing = names - available
+        if missing:
+            raise AssertionError(
+                f"{folder}: unresolved changed references: {sorted(missing)}",
+            )
+    # The net-glass comparison relies on game-owned recipes, not mod overrides.
+    for root in (ir, mr):
+        overrides = definition_ids(
+            root, "common/production_methods", include_injections=True,
+        ) & {
+            "pm_crystal_glass", "pm_houseware_plastics", "pm_disabled_ceramics",
+        }
+        if overrides:
+            raise AssertionError(
+                f"{root}: recheck uranium base-PM drift: {sorted(overrides)}",
+            )
+
+
+def check_locale_inventory() -> None:
+    """Require the same complete key set exactly once in all supported languages."""
+    expected_paths = {
+        MOD / f"localization/{lang}/zzirmr_{lang}.yml" for lang in LANGUAGES
+    }
+    actual_paths = set((MOD / "localization").rglob("*.yml"))
+    if actual_paths != expected_paths:
+        raise AssertionError(
+            f"missing locale files: {sorted(expected_paths - actual_paths)}; "
+            f"unexpected: {sorted(actual_paths - expected_paths)}",
+        )
+    for path in sorted(actual_paths):
+        keys = []
+        lines = path.read_text(encoding="utf-8-sig").splitlines()
+        for number, line in enumerate(lines[1:], 2):
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            match = re.fullmatch(
+                r'\s*(\w+):\d*\s*"(?:\\.|[^"\\])*"\s*(?:#.*)?', line,
+            )
+            if not match:
+                raise AssertionError(f"{path}:{number}: malformed localization entry")
+            keys.append(match[1])
+        expected = {AIRCRAFT_TT, MILITARY_TT, URANIUM_GROUP}
+        if len(keys) != len(set(keys)) or set(keys) != expected:
+            raise AssertionError(
+                f"{path}: missing {sorted(expected - set(keys))}; "
+                f"unexpected {sorted(set(keys) - expected)}; duplicate keys "
+                f"{sorted(key for key in set(keys) if keys.count(key) > 1)}",
+            )
+
+
 def check_electrics(game: Path, ir: Path, mr: Path) -> None:
     """Keep IR's fields and game's copper extension, adding only MR's injections."""
     name = "company_basic_electrics"
@@ -240,6 +407,8 @@ def check_electrics(game: Path, ir: Path, mr: Path) -> None:
             expected, f"{field} = {{ {' '.join(original)} }}",
             f"{field} = {{ {' '.join(original + extra)} }}", 1,
         )
+        injection = rewrite(injection, f"{field} = {{ {' '.join(extra)} }}", "", 1)
+    equal(injection, [])  # Scalar injections need an explicit merge, never a silent skip.
     equal(
         one_block(actual, "extension_building_types"),
         one_block(expected, "extension_building_types"),
@@ -832,10 +1001,10 @@ def check_locale(language: str, mr: Path) -> None:
     if language == "korean":
         # Upstream says national total; this predicate requires one qualifying building.
         aircraft = aircraft.replace("의 #V 건물 단계가 총 ", "의 #V 건물 단계가 ")
-    if locale_value(text, AIRCRAFT_TT) != aircraft:
+    actual_aircraft = locale_value(text, AIRCRAFT_TT)
+    if actual_aircraft != aircraft:
         raise AssertionError(
-            f"{AIRCRAFT_TT}: expected current MR translation "
-            "with aircraft substitution and single-building scope",
+            f"{AIRCRAFT_TT}: expected {aircraft!r}; got {actual_aircraft!r}",
         )
     military = locale_value(
         (upstream / f"mr_GUI_l_{language}.yml").read_text(encoding="utf-8-sig"),
@@ -866,12 +1035,17 @@ def check_locale(language: str, mr: Path) -> None:
             "[GetBuildingType('building_war_machine_industry').GetName]" + separator
             + "[GetBuildingType('building_aircraft_industry').GetName]",
         )
-    if locale_value(text, MILITARY_TT) != military:
+    actual_military = locale_value(text, MILITARY_TT)
+    if actual_military != military:
         raise AssertionError(
-            f"{MILITARY_TT}: expected five industries and current translation",
+            f"{MILITARY_TT}: expected {military!r}; got {actual_military!r}",
         )
     if locale_value(text, URANIUM_GROUP) != '"$pm_curie_uranium_glass$"':
         raise AssertionError(f"{URANIUM_GROUP}: must reference MR's existing PM name")
+    locale_value(
+        (upstream / f"curie_l_{language}.yml").read_text(encoding="utf-8-sig"),
+        "pm_curie_uranium_glass",
+    )
 
 
 def main() -> int:
@@ -893,7 +1067,23 @@ def main() -> int:
             passed += 1
 
     check("parser/BOM self-checks", self_checks)
+    check(".metadata/metadata.json / supported 1.15 metadata", check_metadata)
+    for path in sorted(MOD.rglob("*.txt")):
+        check(
+            f"{path.relative_to(MOD)} / structure, namespace and BOM",
+            lambda p=path: check_script_file(p),
+        )
     check(
+        "patch / unique IDs and upstream replacement targets",
+        lambda: check_targets(args.game, args.ir, args.mr),
+    )
+    check(
+        "patch / changed building, PM, PMG, trait and modifier references",
+        lambda: check_references(args.game, args.ir, args.mr),
+    )
+    check("localization / complete matching key sets", check_locale_inventory)
+    check(
+        "common/company_types/zzzzirmr_vanilla_company_types.txt / "
         "company_basic_electrics / copper extension and preserved IR+MR fields",
         lambda: check_electrics(args.game, args.ir, args.mr),
     )
@@ -1251,6 +1441,10 @@ def main() -> int:
         MOD / "common/production_method_groups/zzzzirmr_industry.txt",
         args.mr / "common/production_method_groups/"
         "mr_vanilla_production_method_groups_inject.txt",
+    ))
+    loaders.add((
+        MOD / "common/production_method_groups/zzzzirmr_industry.txt",
+        args.ir / "common/production_method_groups/zir_industry.txt",
     ))
     for patch, upstream in sorted(loaders):
         check(

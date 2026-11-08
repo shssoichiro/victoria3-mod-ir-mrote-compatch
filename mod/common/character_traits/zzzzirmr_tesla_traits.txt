@@ -1,4 +1,4 @@
-# Source: Morgenrote common/character_traits/mr_science_tesla_traits.txt.
+﻿# Source: Morgenrote common/character_traits/mr_science_tesla_traits.txt.
 # IR separates aircraft production from the automotive industry.
 REPLACE:tesla_aeronautical_engineer = {
 	type = skill
