@@ -27,8 +27,10 @@ IR revisions need revalidation; arbitrary third-party mods are not covered.
 
 1. Install the required CMF, MR, and IR versions above.
 2. Use this repository's **`mod/` directory as the actual local mod root**, not the
-   repository root. Register that directory with your local mod installation, or
-   copy its contents into one local mod directory, including hidden `.metadata/`.
+   repository root. Copy or symlink it as a named mod directory under Victoria 3's
+   user-data `.../Paradox Interactive/Victoria 3/mod/`, including hidden `.metadata/`.
+   Register that local mod with the launcher; copying or symlinking alone is not
+   enough.
    The resulting root must contain `.metadata/metadata.json`, `common/`, `events/`,
    and `localization/` side by side; avoid an extra nested `mod/mod/` directory.
 3. Arrange the playset in this order, with the patch last:
@@ -82,8 +84,9 @@ git diff --check
 
 Replace the three paths for another installation. Success prints
 `PASS: ... offline compatibility checks (source comparisons, not in-game validation)`.
-Failures identify the relevant file, symbol, or database; missing/unreadable
-source files are errors, not skipped tests.
+Failures identify the relevant file, symbol, or database. Missing/unreadable exact
+source files required by comparisons are errors; optional database folders may be
+absent from a source mod.
 
 The checker covers all patch script structure, UTF-8 BOMs, unique IDs per database,
 replacement target existence, the integration's changed building/production-method/
@@ -134,11 +137,15 @@ entire upstream mod stack is error-free.
   The first loaded event definition wins. Root files load before subfolders, so
   the patch's root events precede MR's nested events, regardless of `zzz` prefixes.
   IR's decree file is also at the root, so `__irmr_decree_events.txt` must sort
-  before `_ir_decree_events.txt`. The PMG patch must sort after both MR's injection
-  file and IR's `zir_industry.txt`. Recheck actual engine behavior independently
+  before `_ir_decree_events.txt`. Recheck actual engine behavior independently
   of launcher order.
-- Save scripts and localization as UTF-8 with BOM. Keep localization headers,
-  filename suffixes, and complete key sets aligned across all 11 languages.
+- Common database `REPLACE:` overrides take precedence over MR's `TRY_INJECT:`
+  regardless of filenames. Within the same mode, later filenames win: the PMG
+  patch must sort after IR's `zir_industry.txt`, which also uses `REPLACE:`.
+- Save scripts and localization as UTF-8 with BOM. Locale files need names ending
+  in `_l_<language>.yml` and matching `l_<language>:` headers. Keep overrides in
+  `localization/<language>/replace/`; the patch's new uranium key
+  can share those files. Keep complete key sets aligned across all 11 languages.
 - After upstream updates, re-read affected definitions and rerun source comparisons.
   Update the checker's scoped changed-reference list when adding integrations.
   It inventories declaration IDs only in relevant upstream databases, not all

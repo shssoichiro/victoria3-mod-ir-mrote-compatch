@@ -174,8 +174,18 @@ def locale_value(text: str, key: str) -> str:
     return matches[0]
 
 
+def check_locale_loader(path: Path, language: str, keys: set[str]) -> None:
+    """Require the language suffix and replace/ for the two MR tooltip overrides."""
+    if not path.name.endswith(f"_l_{language}.yml"):
+        raise AssertionError(f"{path}: filename must end in _l_{language}.yml")
+    if keys & {AIRCRAFT_TT, MILITARY_TT} and path.parent != (
+        MOD / f"localization/{language}/replace"
+    ):
+        raise AssertionError(f"{path}: existing tooltip overrides require replace/")
+
+
 def self_checks() -> None:
-    """Catch scanner regressions before trusting source comparisons."""
+    """Catch scanner and loader regressions before trusting source comparisons."""
     sample = '\ufeffa={ text="braces { } # \\"quoted\\"" # } fake={}\n n>=0.50 n=10 }'
     equal(
         one_block(tokens(sample), "a"),
@@ -190,16 +200,44 @@ def self_checks() -> None:
     text = b'\xef\xbb\xbfl_english:\n key:0 "#default_text { \\"x\\" }#!" # note'
     if locale_value(text.decode("utf-8-sig"), "key") != '"#default_text { \\"x\\" }#!"':
         raise AssertionError("BOM/quoted localization self-check failed")
+    locale = MOD / "localization/english"
+    check_locale_loader(
+        locale / "replace/zzirmr_l_english.yml", "english",
+        {AIRCRAFT_TT, MILITARY_TT, URANIUM_GROUP},
+    )
+    check_locale_loader(locale / "zzirmr_l_english.yml", "english", {URANIUM_GROUP})
+    for path, keys, diagnostic in (
+        (locale / "replace/zzirmr_english.yml", {URANIUM_GROUP}, "_l_english.yml"),
+        (locale / "zzirmr_l_english.yml", {AIRCRAFT_TT}, "require replace/"),
+        (locale / "zzirmr_l_english.yml", {MILITARY_TT}, "require replace/"),
+    ):
+        try:
+            check_locale_loader(path, "english", keys)
+        except AssertionError as error:
+            if diagnostic not in str(error):
+                raise
+        else:
+            raise AssertionError(f"locale loader accepted invalid path: {path}")
+    check_loader(
+        MOD / "events/__irmr_decree_events.txt",
+        Path("upstream/events/nested/z_fixture.txt"),
+    )
 
 
 def check_loader(patch: Path, upstream: Path, *, first_event: bool = False) -> None:
     """Check additive filenames/load order and the two distinct override syntaxes."""
-    if patch.name == upstream.name:
-        raise AssertionError("full-file shadows are forbidden")
-    ordered = patch.name < upstream.name if first_event else patch.name > upstream.name
-    if patch.suffix != ".txt" or not ordered:
-        order = "before" if first_event else "after"
-        raise AssertionError(f"filename must load {order} {upstream.name}")
+    if patch.suffix != ".txt":
+        raise AssertionError("script filename must end in .txt")
+    if patch.parent == MOD / "events" and not first_event:
+        if not any(parent.name == "events" for parent in upstream.parent.parents):
+            raise AssertionError("root event overrides require nested upstream events")
+    else:
+        if patch.name == upstream.name:
+            raise AssertionError("full-file shadows are forbidden")
+        ordered = patch.name < upstream.name if first_event else patch.name > upstream.name
+        if not ordered:
+            order = "before" if first_event else "after"
+            raise AssertionError(f"filename must load {order} {upstream.name}")
     definitions = blocks(tokens(patch.read_text(encoding="utf-8-sig")))
     if patch.parent == MOD / "events":
         if any(":" in name for name, _ in definitions):
@@ -355,14 +393,9 @@ def check_references(game: Path, ir: Path, mr: Path) -> None:
 def check_locale_inventory() -> None:
     """Require the same complete key set exactly once in all supported languages."""
     expected_paths = {
-        MOD / f"localization/{lang}/zzirmr_{lang}.yml" for lang in LANGUAGES
+        MOD / f"localization/{lang}/replace/zzirmr_l_{lang}.yml" for lang in LANGUAGES
     }
     actual_paths = set((MOD / "localization").rglob("*.yml"))
-    if actual_paths != expected_paths:
-        raise AssertionError(
-            f"missing locale files: {sorted(expected_paths - actual_paths)}; "
-            f"unexpected: {sorted(actual_paths - expected_paths)}",
-        )
     for path in sorted(actual_paths):
         keys = []
         lines = path.read_text(encoding="utf-8-sig").splitlines()
@@ -375,6 +408,9 @@ def check_locale_inventory() -> None:
             if not match:
                 raise AssertionError(f"{path}:{number}: malformed localization entry")
             keys.append(match[1])
+        check_locale_loader(
+            path, path.relative_to(MOD / "localization").parts[0], set(keys),
+        )
         expected = {AIRCRAFT_TT, MILITARY_TT, URANIUM_GROUP}
         if len(keys) != len(set(keys)) or set(keys) != expected:
             raise AssertionError(
@@ -382,6 +418,11 @@ def check_locale_inventory() -> None:
                 f"unexpected {sorted(set(keys) - expected)}; duplicate keys "
                 f"{sorted(key for key in set(keys) if keys.count(key) > 1)}",
             )
+    if actual_paths != expected_paths:
+        raise AssertionError(
+            f"missing locale files: {sorted(expected_paths - actual_paths)}; "
+            f"unexpected: {sorted(actual_paths - expected_paths)}",
+        )
 
 
 def check_electrics(game: Path, ir: Path, mr: Path) -> None:
@@ -983,13 +1024,11 @@ def check_pest_condition(name: str) -> None:
 
 def check_locale(language: str, mr: Path) -> None:
     """Preserve translations, single-building scope and MR's uranium PM name."""
-    path = MOD / f"localization/{language}/zzirmr_{language}.yml"
+    path = MOD / f"localization/{language}/replace/zzirmr_l_{language}.yml"
     data = path.read_bytes()
     text = data.decode("utf-8-sig")
     if not data.startswith(b"\xef\xbb\xbf") or not text.startswith(f"l_{language}:\n"):
         raise AssertionError("expected UTF-8 BOM and matching language header")
-    if not path.name.endswith(f"_{language}.yml"):
-        raise AssertionError("localization filename must end in its language suffix")
     upstream = mr / f"localization/{language}"
     aircraft = locale_value(
         (upstream / f"curtiss_l_{language}.yml").read_text(encoding="utf-8-sig"),
@@ -1066,7 +1105,7 @@ def main() -> int:
         else:
             passed += 1
 
-    check("parser/BOM self-checks", self_checks)
+    check("parser/BOM/loader self-checks", self_checks)
     check(".metadata/metadata.json / supported 1.15 metadata", check_metadata)
     for path in sorted(MOD.rglob("*.txt")):
         check(
@@ -1453,7 +1492,7 @@ def main() -> int:
         )
     for language in LANGUAGES:
         check(
-            f"localization/{language}/zzirmr_{language}.yml",
+            f"localization/{language}/replace/zzirmr_l_{language}.yml",
             lambda lang=language: check_locale(lang, args.mr),
         )
     # Also catch the obsolete key if a later change adds another locale file.
