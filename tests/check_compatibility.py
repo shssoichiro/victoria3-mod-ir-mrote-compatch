@@ -25,6 +25,22 @@ AIRCRAFT_TT = "curtiss_has_aeroplane_production_size_x_tooltip_trigger_tt"
 MILITARY_TT = "MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT"
 OBSOLETE_TT = "MR_CURTISS_FOUND_PILOT_SCHOOL_BUTTON_TRIGGER_TT"
 URANIUM_GROUP = "irmr_pmg_uranium_glass"
+IR_SYNTHETICS = ("building_synthetic_rubber_plant", "building_synthetic_fuel_plant")
+MR_SYNTHETICS = (
+    "building_mendelejew_hydrogenation_plants",
+    "building_mendelejew_synthetic_rubber_factory",
+)
+INDUSTRY_LAWS = ("law_industry_banned", "law_extraction_economy")
+INDUSTRY_TRIGGERS = (
+    "has_heavy_industry_building", "is_heavy_industry_building",
+    "is_production_building",
+)
+INDUSTRY_RESTRICTION = """
+    owner = { NOT = { OR = {
+        has_law_or_variant = law_type:law_industry_banned
+        has_law_or_variant = law_type:law_extraction_economy
+    } } }
+"""
 
 
 def tokens(text: str) -> list[str]:
@@ -155,12 +171,14 @@ def self_checks() -> None:
         raise AssertionError("BOM/quoted localization self-check failed")
 
 
-def check_loader(patch: Path, upstream: Path) -> None:
+def check_loader(patch: Path, upstream: Path, *, first_event: bool = False) -> None:
     """Check additive filenames/load order and the two distinct override syntaxes."""
     if patch.name == upstream.name:
         raise AssertionError("full-file shadows are forbidden")
-    if patch.suffix != ".txt" or patch.name <= upstream.name:
-        raise AssertionError(f"filename must load after {upstream.name}")
+    ordered = patch.name < upstream.name if first_event else patch.name > upstream.name
+    if patch.suffix != ".txt" or not ordered:
+        order = "before" if first_event else "after"
+        raise AssertionError(f"filename must load {order} {upstream.name}")
     definitions = blocks(tokens(patch.read_text(encoding="utf-8-sig")))
     if patch.parent == MOD / "events":
         if any(":" in name for name, _ in definitions):
@@ -373,6 +391,152 @@ def check_uranium_override_absence() -> None:
                     raise AssertionError(f"{path}: unexpected override {name}")
 
 
+def check_synthetic_building(name: str, ir: Path, mr: Path) -> None:
+    """Keep saved-building metadata and unlocks; change only construction access."""
+    actual = source(
+        MOD / "common/buildings/zzzzzirmr_heavy_industry.txt", "REPLACE:" + name,
+    )
+    if name in IR_SYNTHETICS:
+        expected = source(
+            ir / "common/buildings/zir_heavy_industry.txt", "REPLACE_OR_CREATE:" + name,
+        )
+        equal(one_block(expected, "possible"), tokens(INDUSTRY_RESTRICTION))
+        expected = rewrite(
+            expected, f"possible = {{ {INDUSTRY_RESTRICTION} }}",
+            "possible = { always = no }", 1,
+        )
+        equal(one_block(actual, "possible"), tokens("always = no"))
+    else:
+        expected = source(
+            mr / "common/buildings/mr_science_mendelejew_buildings.txt", name,
+        )
+        expected = rewrite(
+            expected, "ownership_type = self",
+            f"possible = {{ {INDUSTRY_RESTRICTION} }} ownership_type = self", 1,
+        )
+        equal(one_block(actual, "possible"), tokens(INDUSTRY_RESTRICTION))
+    equal(actual, expected)
+
+
+def check_industry_trigger(name: str, ir: Path) -> None:
+    """Include both MR survivors without repairing unrelated upstream omissions."""
+    predicate = "has_building" if name.startswith("has_") else "is_building_type"
+    expected = source(
+        ir / "common/scripted_triggers/zir_scripted_triggers.txt", "REPLACE:" + name,
+    )
+    anchor = f"{predicate} = building_synthetic_fuel_plant"
+    additions = " ".join(f"{predicate} = {target}" for target in MR_SYNTHETICS)
+    expected = rewrite(expected, anchor, f"{anchor} {additions}", 1)
+    actual = source(
+        MOD / "common/scripted_triggers/zzzzirmr_industry_triggers.txt",
+        "REPLACE:" + name,
+    )
+    for target in MR_SYNTHETICS:
+        contains(one_block(actual, "OR"), f"{predicate} = {target}")
+    equal(actual, expected)
+
+
+def check_industry_law(name: str, game: Path, ir: Path) -> None:
+    """Preserve full IR/game law fields; remove MR plants only upon activation."""
+    expected = source(ir / "common/laws/zir_economic_system.txt", name)
+    vanilla = source(game / "common/laws/01_economic_system.txt", name)
+    ir_activation = " ".join(one_block(expected, "on_activate"))
+    game_activation = " ".join(one_block(vanilla, "on_activate"))
+    equal(
+        rewrite(expected, f"on_activate = {{ {ir_activation} }}", "", 1),
+        rewrite(vanilla, f"on_activate = {{ {game_activation} }}", "", 1),
+    )
+    additions = " ".join(
+        f"if = {{ limit = {{ has_building = {target} }} remove_building = {target} }}"
+        for target in MR_SYNTHETICS
+    )
+    anchor = (
+        "if = { limit = { has_building = building_synthetic_fuel_plant } "
+        "remove_building = building_synthetic_fuel_plant }"
+    )
+    expected = rewrite(expected, anchor, f"{anchor} {additions}", 1)
+    actual = source(
+        MOD / "common/laws/zzzzirmr_economic_system.txt", "REPLACE:" + name,
+    )
+    states = one_block(
+        one_block(one_block(actual, "on_activate"), "custom_tooltip"),
+        "every_scope_state",
+    )
+    for target in MR_SYNTHETICS:
+        contains(
+            states,
+            f"if = {{ limit = {{ has_building = {target} }} "
+            f"remove_building = {target} }}",
+        )
+    equal(actual, expected)
+
+
+def check_decree_event(name: str, ir: Path) -> None:
+    """Extend eligibility and selection, preserving every other IR event token."""
+    expected = source(ir / "events/_ir_decree_events.txt", name)
+    anchor = "is_building_type = building_synthetic_fuel_plant"
+    additions = " ".join(f"is_building_type = {target}" for target in MR_SYNTHETICS)
+    expected = rewrite(expected, anchor, f"{anchor} {additions}", 2)
+    actual = source(MOD / "events/__irmr_decree_events.txt", name)
+    eligible = one_block(
+        one_block(
+            one_block(one_block(actual, "trigger"), "any_scope_state"),
+            "any_scope_building",
+        ),
+        "OR",
+    )
+    selection = one_block(
+        one_block(
+            one_block(one_block(actual, "immediate"), "random_scope_state"),
+            "random_scope_building",
+        ),
+        "limit",
+    )
+    for target in MR_SYNTHETICS:
+        for factory_list in (eligible, one_block(selection, "OR")):
+            contains(factory_list, f"is_building_type = {target}")
+    equal(actual, expected)
+
+
+def check_definition_scope(path: Path, names: tuple[str, ...]) -> None:
+    """Reject accidental full-file copies or extra database overrides."""
+    equal(
+        [name for name, _ in blocks(tokens(path.read_text(encoding="utf-8-sig")))],
+        ["REPLACE:" + name for name in names],
+    )
+
+
+def check_decree_scope(ir: Path) -> None:
+    """Own only two bare IDs and one namespace; leave other IR events upstream."""
+    patch = MOD / "events/__irmr_decree_events.txt"
+    upstream = ir / "events/_ir_decree_events.txt"
+    items = tokens(patch.read_text(encoding="utf-8-sig"))
+    definitions = blocks(items)
+    names = ("decree_events.100", "decree_events.101")
+    equal([name for name, _ in definitions], list(names))
+    for name, body in definitions:
+        items = rewrite(items, f"{name} = {{ {' '.join(body)} }}", "", 1)
+    equal(items, tokens("namespace = decree_events"))
+    if (MOD / "events" / upstream.name).exists():
+        raise AssertionError("IR decree file must not be shadowed")
+    ir_names = {
+        name for name, _ in blocks(tokens(upstream.read_text(encoding="utf-8-sig")))
+    }
+    for path in sorted((MOD / "events").rglob("*.txt")):
+        for name, _ in blocks(tokens(path.read_text(encoding="utf-8-sig"))):
+            if name.rsplit(":", 1)[-1] in ir_names:
+                if path != patch or name not in names:
+                    raise AssertionError(f"{path}: unexpected IR decree override {name}")
+
+
+def check_silk_suppression_absence() -> None:
+    """Do not restore the removed synthetic-silk/synthetics building tombstone."""
+    for path in sorted((MOD / "common/buildings").rglob("*.txt")):
+        for name, _ in blocks(tokens(path.read_text(encoding="utf-8-sig"))):
+            if name.rsplit(":", 1)[-1] == "building_synthetics_plant":
+                raise AssertionError(f"{path}: removed synthetics suppression returned")
+
+
 def check_locale(language: str, mr: Path) -> None:
     """Preserve translations, single-building scope and MR's uranium PM name."""
     path = MOD / f"localization/{language}/zzirmr_{language}.yml"
@@ -474,6 +638,50 @@ def main() -> int:
     check(
         "uranium / no pottery-building or recipe overrides",
         check_uranium_override_absence,
+    )
+    for name in IR_SYNTHETICS + MR_SYNTHETICS:
+        check(
+            f"{name} / preserved metadata and construction access",
+            lambda n=name: check_synthetic_building(n, args.ir, args.mr),
+        )
+    for name in INDUSTRY_TRIGGERS:
+        check(
+            f"{name} / both MR factories and unchanged IR memberships",
+            lambda n=name: check_industry_trigger(n, args.ir),
+        )
+    for name in INDUSTRY_LAWS:
+        check(
+            f"{name} / preserved fields and guarded MR removal on enactment",
+            lambda n=name: check_industry_law(n, args.game, args.ir),
+        )
+    for name in ("decree_events.100", "decree_events.101"):
+        check(
+            f"{name} / both MR factories in eligibility and selection",
+            lambda n=name: check_decree_event(n, args.ir),
+        )
+    for filename, names in (
+        ("buildings/zzzzzirmr_heavy_industry.txt", IR_SYNTHETICS + MR_SYNTHETICS),
+        ("scripted_triggers/zzzzirmr_industry_triggers.txt", INDUSTRY_TRIGGERS),
+        ("laws/zzzzirmr_economic_system.txt", INDUSTRY_LAWS),
+    ):
+        check(
+            f"common/{filename} / exact replacement scope",
+            lambda f=filename, n=names: check_definition_scope(MOD / "common" / f, n),
+        )
+    check(
+        "decrees / namespace, bare IDs and unshadowed IR events",
+        lambda: check_decree_scope(args.ir),
+    )
+    check(
+        "synthetics / removed silk suppression stays absent",
+        check_silk_suppression_absence,
+    )
+    check(
+        "decrees / first-definition filename order",
+        lambda: check_loader(
+            MOD / "events/__irmr_decree_events.txt",
+            args.ir / "events/_ir_decree_events.txt", first_event=True,
+        ),
     )
     cases = [
         (
@@ -579,6 +787,24 @@ def main() -> int:
         MOD / "common/buildings/zzzzzirmr_industry.txt",
         args.ir / "common/buildings/zir_industry.txt",
     ))
+    loaders.update({
+        (
+            MOD / "common/buildings/zzzzzirmr_heavy_industry.txt",
+            args.ir / "common/buildings/zir_heavy_industry.txt",
+        ),
+        (
+            MOD / "common/buildings/zzzzzirmr_heavy_industry.txt",
+            args.mr / "common/buildings/mr_science_mendelejew_buildings.txt",
+        ),
+        (
+            MOD / "common/scripted_triggers/zzzzirmr_industry_triggers.txt",
+            args.ir / "common/scripted_triggers/zir_scripted_triggers.txt",
+        ),
+        (
+            MOD / "common/laws/zzzzirmr_economic_system.txt",
+            args.ir / "common/laws/zir_economic_system.txt",
+        ),
+    })
     loaders.add((
         MOD / "common/production_method_groups/zzzzirmr_industry.txt",
         args.mr / "common/production_method_groups/"

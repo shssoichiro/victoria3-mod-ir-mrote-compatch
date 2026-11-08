@@ -1,0 +1,283 @@
+# From IR events/_ir_decree_events.txt; include MR factories in both factory lists.
+# COMPAT: First event definition wins; this filename must sort before IR's file.
+namespace = decree_events
+decree_events.100 = {
+	#Throughput vs minimum sol
+	type = country_event
+	placement = scope:decree_manufacturing_industry
+	title = decree_events.100.t
+	desc = decree_events.100.d
+	flavor = decree_events.100.f
+	event_image = {
+		video = "unspecific_gears_pistons"
+	}
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_trade.dds"
+	duration = 3
+	trigger = {
+		# triggered by on_action - on_yearly_events
+		any_scope_state = {
+			is_incorporated = yes
+			state_has_decree_variant = { DECREE = decree_encourage_manufacturing_industry }
+			any_scope_building = {
+				OR = {
+					is_building_type = building_food_industry
+					is_building_type = building_distillery
+					is_building_type = building_textile_mill
+					is_building_type = building_tailoring_workshop
+					is_building_type = building_furniture_manufactory
+					is_building_type = building_luxury_furniture_manufactory
+					is_building_type = building_glassworks
+					is_building_type = building_pottery_mill
+					is_building_type = building_tooling_workshop
+					is_building_type = building_paper_mill
+					is_building_type = building_chemical_plant
+					is_building_type = building_explosives_factory
+					is_building_type = building_synthetics_plant
+					is_building_type = building_synthetic_rubber_plant
+					is_building_type = building_synthetic_fuel_plant
+					is_building_type = building_mendelejew_hydrogenation_plants
+					is_building_type = building_mendelejew_synthetic_rubber_factory
+					is_building_type = building_rayon_plant
+					is_building_type = building_steel_mill
+					is_building_type = building_motor_industry
+					is_building_type = building_automotive_industry
+					is_building_type = building_shipyard
+					is_building_type = building_war_machine_industry
+					is_building_type = building_aircraft_industry
+					is_building_type = building_electrics_industry
+					is_building_type = building_radio_industry
+					is_building_type = building_arms_industry
+					is_building_type = building_munition_plant
+					is_building_type = building_power_plant
+				}
+				weekly_profit > 0
+				cash_reserves_ratio > 0.5
+			}
+			NOR = {
+				has_modifier = decree_manufacturing_throughput
+				has_modifier = decree_minimum_wealth
+			}
+		}
+	}
+	immediate = {
+		random_scope_state = {
+			limit = {
+				is_incorporated = yes
+				state_has_decree_variant = { DECREE = decree_encourage_manufacturing_industry }
+				NOR = {
+					has_modifier = decree_manufacturing_throughput
+					has_modifier = decree_minimum_wealth
+				}
+			}
+			save_scope_as = decree_manufacturing_industry
+			random_scope_building = {
+				limit = {
+					OR = {
+						is_building_type = building_food_industry
+						is_building_type = building_distillery
+						is_building_type = building_textile_mill
+						is_building_type = building_tailoring_workshop
+						is_building_type = building_furniture_manufactory
+						is_building_type = building_luxury_furniture_manufactory
+						is_building_type = building_glassworks
+						is_building_type = building_pottery_mill
+						is_building_type = building_tooling_workshop
+						is_building_type = building_paper_mill
+						is_building_type = building_chemical_plant
+						is_building_type = building_explosives_factory
+						is_building_type = building_synthetics_plant
+						is_building_type = building_synthetic_rubber_plant
+						is_building_type = building_synthetic_fuel_plant
+						is_building_type = building_mendelejew_hydrogenation_plants
+						is_building_type = building_mendelejew_synthetic_rubber_factory
+						is_building_type = building_rayon_plant
+						is_building_type = building_steel_mill
+						is_building_type = building_motor_industry
+						is_building_type = building_automotive_industry
+						is_building_type = building_shipyard
+						is_building_type = building_war_machine_industry
+						is_building_type = building_aircraft_industry
+						is_building_type = building_electrics_industry
+						is_building_type = building_radio_industry
+						is_building_type = building_arms_industry
+						is_building_type = building_munition_plant
+						is_building_type = building_power_plant
+					}
+					weekly_profit > 0
+					cash_reserves_ratio > 0.5
+				}
+				save_scope_as = manufacturing_building_production
+			}
+		}
+	}
+	option = {
+		#increased throughput
+		name = decree_events.100.a
+		default_option = yes
+		scope:decree_manufacturing_industry = {
+			add_modifier = {
+				name = decree_manufacturing_throughput
+				days = short_modifier_time
+			}
+		}
+	}
+	option = {
+		#Increase expected SoL
+		name = decree_events.100.b
+		trigger = {
+			institution_investment_level = {
+				institution = institution_social_security
+				value >= 1
+			}
+		}
+		scope:decree_manufacturing_industry = {
+			add_modifier = {
+				name = decree_minimum_wealth
+				days = short_modifier_time
+			}
+		}
+	}
+}
+
+decree_events.101 = {
+	#Choose who gets the credit
+	type = country_event
+	placement = scope:decree_manufacturing_politics
+	title = decree_events.101.t
+	desc = decree_events.101.d
+	flavor = decree_events.101.f
+	event_image = {
+		video = "europenorthamerica_capitalists_meeting"
+	}
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+	icon = "gfx/interface/icons/event_icons/event_election.dds"
+	duration = 3
+	trigger = {
+		# triggered by on_action - on_yearly_events
+		any_scope_state = {
+			is_incorporated = yes
+			state_has_decree_variant = { DECREE = decree_encourage_manufacturing_industry }
+			any_scope_building = {
+				OR = {
+					is_building_type = building_food_industry
+					is_building_type = building_distillery
+					is_building_type = building_textile_mill
+					is_building_type = building_tailoring_workshop
+					is_building_type = building_furniture_manufactory
+					is_building_type = building_luxury_furniture_manufactory
+					is_building_type = building_glassworks
+					is_building_type = building_pottery_mill
+					is_building_type = building_tooling_workshop
+					is_building_type = building_paper_mill
+					is_building_type = building_chemical_plant
+					is_building_type = building_explosives_factory
+					is_building_type = building_synthetics_plant
+					is_building_type = building_synthetic_rubber_plant
+					is_building_type = building_synthetic_fuel_plant
+					is_building_type = building_mendelejew_hydrogenation_plants
+					is_building_type = building_mendelejew_synthetic_rubber_factory
+					is_building_type = building_rayon_plant
+					is_building_type = building_steel_mill
+					is_building_type = building_motor_industry
+					is_building_type = building_automotive_industry
+					is_building_type = building_shipyard
+					is_building_type = building_war_machine_industry
+					is_building_type = building_aircraft_industry
+					is_building_type = building_electrics_industry
+					is_building_type = building_radio_industry
+					is_building_type = building_arms_industry
+					is_building_type = building_munition_plant
+					is_building_type = building_power_plant
+				}
+				weekly_profit > 0
+				cash_reserves_ratio > 0.5
+			}
+		}
+		NOR = {
+			has_modifier = decree_manufacturing_industrialist_attraction
+			has_modifier = decree_manufacturing_trade_attraction
+			has_modifier = decree_manufacturing_petty_bourgeoisie_attraction
+		}
+	}
+	immediate = {
+		random_scope_state = {
+			limit = {
+				is_incorporated = yes
+				state_has_decree_variant = { DECREE = decree_encourage_manufacturing_industry }
+				NOR = {
+					has_modifier = decree_manufacturing_industrialist_attraction
+					has_modifier = decree_manufacturing_trade_attraction
+					has_modifier = decree_manufacturing_petty_bourgeoisie_attraction
+				}
+			}
+			save_scope_as = decree_manufacturing_politics
+			random_scope_building = {
+				limit = {
+					OR = {
+						is_building_type = building_food_industry
+						is_building_type = building_distillery
+						is_building_type = building_textile_mill
+						is_building_type = building_tailoring_workshop
+						is_building_type = building_furniture_manufactory
+						is_building_type = building_luxury_furniture_manufactory
+						is_building_type = building_glassworks
+						is_building_type = building_pottery_mill
+						is_building_type = building_tooling_workshop
+						is_building_type = building_paper_mill
+						is_building_type = building_chemical_plant
+						is_building_type = building_explosives_factory
+						is_building_type = building_synthetics_plant
+						is_building_type = building_synthetic_rubber_plant
+						is_building_type = building_synthetic_fuel_plant
+						is_building_type = building_mendelejew_hydrogenation_plants
+						is_building_type = building_mendelejew_synthetic_rubber_factory
+						is_building_type = building_rayon_plant
+						is_building_type = building_steel_mill
+						is_building_type = building_motor_industry
+						is_building_type = building_automotive_industry
+						is_building_type = building_shipyard
+						is_building_type = building_war_machine_industry
+						is_building_type = building_aircraft_industry
+						is_building_type = building_electrics_industry
+						is_building_type = building_radio_industry
+						is_building_type = building_arms_industry
+						is_building_type = building_munition_plant
+						is_building_type = building_power_plant
+					}
+					weekly_profit > 0
+					cash_reserves_ratio > 0.5
+				}
+				save_scope_as = manufacturing_building_production_politics
+			}
+		}
+		ig:ig_industrialists = {
+			save_scope_as = industrialists_ig_focus
+		}
+	}
+	option = {
+		#Industrialists
+		name = decree_events.101.a
+		default_option = yes
+		add_modifier = {
+			name = decree_manufacturing_industrialist_attraction
+			days = short_modifier_time
+		}
+	}
+	option = {
+		#trade union
+		name = decree_events.101.b
+		add_modifier = {
+			name = decree_manufacturing_trade_attraction
+			days = short_modifier_time
+		}
+	}
+	option = {
+		#petty pisses off other two
+		name = decree_events.101.c
+		add_modifier = {
+			name = decree_manufacturing_petty_bourgeoisie_attraction
+			days = short_modifier_time
+		}
+	}
+}
