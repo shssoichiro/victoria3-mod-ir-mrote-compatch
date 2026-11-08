@@ -1,3 +1,4 @@
 ﻿l_turkish:
+ irmr_pmg_uranium_glass: "$pm_curie_uranium_glass$"
  curtiss_has_aeroplane_production_size_x_tooltip_trigger_tt: "#default_text [GetPlayer.GetName], en az #V [SCOPE.GetValue('building_level')|0] seviyesinde#! bir [GetBuildingType('building_aircraft_industry').GetName]’e sahip.#!"
  MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT: "#default_text [GetPlayer.GetName] has at least one [GetBuildingType('building_war_machine_industry').GetName], [GetBuildingType('building_aircraft_industry').GetName], [GetBuildingType('building_arms_industry').GetName], [GetBuildingType('building_munition_plant').GetName] or [GetBuildingType('building_artillery_foundry').GetName] of level #p 5#! or higher.#!" #NT!

@@ -1,0 +1,18 @@
+# From IR common/production_method_groups/zir_industry.txt: ceramics stay on pottery.
+REPLACE:pmg_luxury_building_glassworks = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_refining.dds"
+	# MODIFIED
+	production_methods = {
+		pm_ceramics
+		pm_bone_china
+	}
+}
+
+# MR's conversion requires a base glass PM; keep it optional on Glassworks instead.
+irmr_pmg_uranium_glass = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_refining.dds"
+	production_methods = {
+		pm_disabled_ceramics
+		pm_curie_uranium_glass
+	}
+}

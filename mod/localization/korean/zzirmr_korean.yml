@@ -1,3 +1,4 @@
 ﻿l_korean:
+ irmr_pmg_uranium_glass: "$pm_curie_uranium_glass$"
  curtiss_has_aeroplane_production_size_x_tooltip_trigger_tt: "#default_text [GetPlayer.GetName]에서 보유한 [GetBuildingType('building_aircraft_industry').GetName]의 #V 건물 단계가 [SCOPE.GetValue('building_level')|0]단계 이상#!#!"
  MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT: "#default_text [GetPlayer.GetName]에서 #p 5단계 이상#!의 [GetBuildingType('building_war_machine_industry').GetName], [GetBuildingType('building_aircraft_industry').GetName]이나 [GetBuildingType('building_arms_industry').GetName], [GetBuildingType('building_munition_plant').GetName], [GetBuildingType('building_artillery_foundry').GetName]를 하나 이상 보유함#!"

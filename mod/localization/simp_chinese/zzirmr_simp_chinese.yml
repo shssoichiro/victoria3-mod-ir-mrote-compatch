@@ -1,3 +1,4 @@
 ﻿l_simp_chinese:
+ irmr_pmg_uranium_glass: "$pm_curie_uranium_glass$"
  curtiss_has_aeroplane_production_size_x_tooltip_trigger_tt: "#default_text [GetPlayer.GetName]拥有一座#V [SCOPE.GetValue('building_level')|0]级及以上的#![GetBuildingType('building_aircraft_industry').GetName]。#!"
  MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT: "#default_text [GetPlayer.GetName]至少有1家#p 5级#!及以上的[GetBuildingType('building_war_machine_industry').GetName]、[GetBuildingType('building_aircraft_industry').GetName]、[GetBuildingType('building_arms_industry').GetName]、[GetBuildingType('building_munition_plant').GetName]或[GetBuildingType('building_artillery_foundry').GetName]。#!"

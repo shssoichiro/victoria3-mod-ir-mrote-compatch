@@ -24,6 +24,7 @@ LANGUAGES = (
 AIRCRAFT_TT = "curtiss_has_aeroplane_production_size_x_tooltip_trigger_tt"
 MILITARY_TT = "MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT"
 OBSOLETE_TT = "MR_CURTISS_FOUND_PILOT_SCHOOL_BUTTON_TRIGGER_TT"
+URANIUM_GROUP = "irmr_pmg_uranium_glass"
 
 
 def tokens(text: str) -> list[str]:
@@ -165,7 +166,14 @@ def check_loader(patch: Path, upstream: Path) -> None:
         if any(":" in name for name, _ in definitions):
             raise AssertionError("root events require bare IDs, not REPLACE:")
     elif patch.is_relative_to(MOD / "common"):
-        if any(not name.startswith("REPLACE:") for name, _ in definitions):
+        new_ids = (
+            {URANIUM_GROUP}
+            if patch.parent == MOD / "common/production_method_groups" else set()
+        )
+        if any(
+            not name.startswith("REPLACE:") and name not in new_ids
+            for name, _ in definitions
+        ):
             raise AssertionError("existing common database overrides require REPLACE:")
     else:
         raise AssertionError("events must be in the patch's root events directory")
@@ -248,8 +256,125 @@ def aviation_delta(items: list[str]) -> list[str]:
     return items
 
 
+def check_pottery_group(ir: Path) -> None:
+    """Keep IR's ceramics-only group on pottery, clearing MR's glass injection."""
+    name = "REPLACE:pmg_luxury_building_glassworks"
+    expected = source(ir / "common/production_method_groups/zir_industry.txt", name)
+    equal(one_block(expected, "production_methods"), ["pm_ceramics", "pm_bone_china"])
+    equal(
+        source(MOD / "common/production_method_groups/zzzzirmr_industry.txt", name),
+        expected,
+    )
+    pottery = source(
+        ir / "common/buildings/zir_industry.txt",
+        "REPLACE_OR_CREATE:building_pottery_mill",
+    )
+    equal(
+        one_block(pottery, "production_method_groups"),
+        ["pmg_luxury_building_glassworks"],
+    )
+
+
+def check_uranium_group(ir: Path) -> None:
+    """Reuse IR's refining texture with an off-first optional conversion list."""
+    expected = source(
+        ir / "common/production_method_groups/zir_industry.txt",
+        "REPLACE:pmg_luxury_building_glassworks",
+    )
+    expected = rewrite(
+        expected, "production_methods = { pm_ceramics pm_bone_china }",
+        "production_methods = { pm_disabled_ceramics pm_curie_uranium_glass }", 1,
+    )
+    equal(
+        source(
+            MOD / "common/production_method_groups/zzzzirmr_industry.txt",
+            URANIUM_GROUP,
+        ),
+        expected,
+    )
+
+
+def check_glassworks(ir: Path) -> None:
+    """Append one group without changing any other current IR Glassworks field."""
+    name = "REPLACE:building_glassworks"
+    expected = source(ir / "common/buildings/zir_industry.txt", name)
+    groups = "pmg_base_building_glassworks pmg_glassblowing"
+    equal(one_block(expected, "production_method_groups"), tokens(groups))
+    expected = rewrite(
+        expected, f"production_method_groups = {{ {groups} }}",
+        f"production_method_groups = {{ {groups} {URANIUM_GROUP} }}", 1,
+    )
+    equal(source(MOD / "common/buildings/zzzzzirmr_industry.txt", name), expected)
+
+
+def check_uranium_recipe(game: Path, mr: Path) -> None:
+    """Check MR's unchanged prerequisites/recipe against real base glass output."""
+    uranium = source(
+        mr / "common/production_methods/mr_science_curie_production_methods.txt",
+        "pm_curie_uranium_glass",
+    )
+    equal(one_block(uranium, "unlocking_technologies"), ["verrier_radioactivity_tech"])
+    equal(
+        one_block(uranium, "unlocking_production_methods"),
+        ["pm_crystal_glass", "pm_houseware_plastics"],
+    )
+    modifiers = one_block(uranium, "building_modifiers")
+    equal(
+        one_block(modifiers, "workforce_scaled"),
+        tokens(
+            "goods_input_good_uranium_add = 10 "
+            "goods_output_glass_add = -55 goods_output_porcelain_add = 65",
+        ),
+    )
+    equal(
+        one_block(modifiers, "level_scaled"),
+        tokens("building_employment_shopkeepers_add = 1000"),
+    )
+    base_methods = one_block(
+        source(
+            game / "common/production_method_groups/01_industry.txt",
+            "pmg_base_building_glassworks",
+        ),
+        "production_methods",
+    )
+    industry = game / "common/production_methods/01_industry.txt"
+    for name, net in (("pm_crystal_glass", 5), ("pm_houseware_plastics", 45)):
+        if name not in base_methods:
+            raise AssertionError(f"{name}: missing from base Glassworks group")
+        workforce = one_block(
+            one_block(source(industry, name), "building_modifiers"),
+            "workforce_scaled",
+        )
+        output = int(workforce[workforce.index("goods_output_glass_add") + 2])
+        equal([str(output - 55)], [str(net)])
+    equal(
+        source(industry, "pm_disabled_ceramics"),
+        tokens(
+            'texture = "gfx/interface/icons/production_method_icons/no_ceramics.dds"',
+        ),
+    )
+
+
+def check_uranium_override_absence() -> None:
+    """Leave pottery's building and all conversion/base recipes upstream-owned."""
+    for folder, names in (
+        ("buildings", {"building_pottery_mill"}),
+        (
+            "production_methods",
+            {
+                "pm_curie_uranium_glass", "pm_crystal_glass",
+                "pm_houseware_plastics", "pm_disabled_ceramics",
+            },
+        ),
+    ):
+        for path in sorted((MOD / "common" / folder).rglob("*.txt")):
+            for name, _ in blocks(tokens(path.read_text(encoding="utf-8-sig"))):
+                if name.rsplit(":", 1)[-1] in names:
+                    raise AssertionError(f"{path}: unexpected override {name}")
+
+
 def check_locale(language: str, mr: Path) -> None:
-    """Preserve translations and the single-building requirement."""
+    """Preserve translations, single-building scope and MR's uranium PM name."""
     path = MOD / f"localization/{language}/zzirmr_{language}.yml"
     data = path.read_bytes()
     text = data.decode("utf-8-sig")
@@ -306,6 +431,8 @@ def check_locale(language: str, mr: Path) -> None:
         raise AssertionError(
             f"{MILITARY_TT}: expected five industries and current translation",
         )
+    if locale_value(text, URANIUM_GROUP) != '"$pm_curie_uranium_glass$"':
+        raise AssertionError(f"{URANIUM_GROUP}: must reference MR's existing PM name")
 
 
 def main() -> int:
@@ -330,6 +457,23 @@ def main() -> int:
     check(
         "company_basic_electrics / copper extension and preserved IR+MR fields",
         lambda: check_electrics(args.game, args.ir, args.mr),
+    )
+    check(
+        "pottery / ceramics and bone china only",
+        lambda: check_pottery_group(args.ir),
+    )
+    check("uranium PMG / disabled first", lambda: check_uranium_group(args.ir))
+    check(
+        "Glassworks / preserve IR fields and append uranium group",
+        lambda: check_glassworks(args.ir),
+    )
+    check(
+        "uranium recipe / prerequisites, net glass 5/45 and disabled no conversion",
+        lambda: check_uranium_recipe(args.game, args.mr),
+    )
+    check(
+        "uranium / no pottery-building or recipe overrides",
+        check_uranium_override_absence,
     )
     cases = [
         (
@@ -430,6 +574,15 @@ def main() -> int:
     loaders.add((
         MOD / "common/company_types/zzzzirmr_vanilla_company_types.txt",
         args.ir / "common/company_types/zir_companies.txt",
+    ))
+    loaders.add((
+        MOD / "common/buildings/zzzzzirmr_industry.txt",
+        args.ir / "common/buildings/zir_industry.txt",
+    ))
+    loaders.add((
+        MOD / "common/production_method_groups/zzzzirmr_industry.txt",
+        args.mr / "common/production_method_groups/"
+        "mr_vanilla_production_method_groups_inject.txt",
     ))
     for patch, upstream in sorted(loaders):
         check(

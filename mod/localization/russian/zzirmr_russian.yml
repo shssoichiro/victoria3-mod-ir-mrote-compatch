@@ -1,3 +1,4 @@
 ﻿l_russian:
+ irmr_pmg_uranium_glass: "$pm_curie_uranium_glass$"
  curtiss_has_aeroplane_production_size_x_tooltip_trigger_tt: "#default_text У [GetPlayer.GetAltNameNoFlag('RU_CL_RP')] есть [GetBuildingType('building_aircraft_industry').GetName] #V уровня [SCOPE.GetValue('building_level')|0] или выше#!.#!"
  MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT: "#default_text В [GetPlayer.GetAltNameNoFlag('RU_CL_PP')] есть хотя бы одно сооружение: [GetBuildingType('building_war_machine_industry').GetName], [GetBuildingType('building_aircraft_industry').GetName], [GetBuildingType('building_arms_industry').GetName], [GetBuildingType('building_munition_plant').GetName] или [GetBuildingType('building_artillery_foundry').GetName] уровня #p 5#! или выше.#!"

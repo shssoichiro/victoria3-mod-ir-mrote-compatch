@@ -1,3 +1,4 @@
 ﻿l_polish:
+ irmr_pmg_uranium_glass: "$pm_curie_uranium_glass$"
  curtiss_has_aeroplane_production_size_x_tooltip_trigger_tt: "#default_text [GetPlayer.GetName] posiada [GetBuildingType('building_aircraft_industry').GetName] na poziomie #V [SCOPE.GetValue('building_level')|0] lub wyższym#!.#!"
  MR_ACADEMICS_MILITARY_BUILDING_REQUIREMENT_2_TT: "#default_text [GetPlayer.GetName] ma co najmniej jeden budynek typu [GetBuildingType('building_war_machine_industry').GetName], [GetBuildingType('building_aircraft_industry').GetName], [GetBuildingType('building_arms_industry').GetName], [GetBuildingType('building_munition_plant').GetName] lub [GetBuildingType('building_artillery_foundry').GetName] na poziomie #p 5#! lub wyższym.#!"
