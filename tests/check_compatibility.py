@@ -41,6 +41,26 @@ INDUSTRY_RESTRICTION = """
         has_law_or_variant = law_type:law_extraction_economy
     } } }
 """
+CODLING_PREDICATE = """
+    OR = {
+        is_building_type = building_wheat_farm
+        is_building_type = building_maize_farm
+        is_building_type = building_rye_farm
+    }
+    OR = {
+        has_active_production_method = pm_apple_orchards
+        has_active_production_method = pm_citrus_orchards
+    }
+"""
+POTATO_BONUS = """
+    if = {
+        limit = { any_scope_state = { any_scope_building = {
+            is_building_type = building_rye_farm
+            has_active_production_method = pm_potatoes
+        } } }
+        multiply = 10
+    }
+"""
 
 
 def tokens(text: str) -> list[str]:
@@ -661,6 +681,137 @@ def check_script_scope(
     equal(items, tokens(f"namespace = {namespace}" if namespace else ""))
 
 
+def check_orchard_sources(ir: Path) -> None:
+    """All four IR base methods produce fruit without the obsolete secondary PMG."""
+    buildings = ir / "common/buildings/zir_agro.txt"
+    orchard = source(buildings, "REPLACE_OR_CREATE:building_fruit_orchard")
+    contains(
+        orchard, "production_method_groups = { pmg_base_building_fruit_orchard "
+        "pmg_harvesting_process_building_orchard }",
+    )
+    rye = source(buildings, "REPLACE:building_rye_farm")
+    equal(
+        one_block(rye, "production_method_groups"),
+        tokens("pmg_base_building_rye_farm pmg_harvesting_process_building_rye_farm"),
+    )
+    methods = one_block(
+        source(
+            ir / "common/production_method_groups/zir_agro.txt",
+            "REPLACE_OR_CREATE:pmg_base_building_fruit_orchard",
+        ),
+        "production_methods",
+    )
+    equal(methods, [
+        "pm_simple_farming_orchard", "pm_soil_enriching_farming_orchard",
+        "pm_fertilization_orchard", "pm_chemical_fertilizer_orchard",
+    ])
+    for method, output in zip(methods, (15, 25, 40, 60)):
+        contains(
+            one_block(one_block(source(
+                ir / "common/production_methods/zir_agro.txt",
+                "REPLACE_OR_CREATE:" + method,
+            ), "building_modifiers"), "workforce_scaled"),
+            f"goods_output_fruit_add = {output}",
+        )
+
+
+def check_codling_event(number: int) -> None:
+    """Pin introductions on both eligibility and selection, including MR's flags."""
+    year, region, level = {
+        65: (1870, "north_america", 5),
+        66: (1880, "oceania", 3),
+        67: (1890, "south_africa", 3),
+        68: (1900, "south_america", 3),
+    }[number]
+    actual = source(
+        MOD / "events/zzzzirmr_science_theiler_events.txt", f"theiler.{number}",
+    )
+    trigger = one_block(actual, "trigger")
+    contains(trigger, f"game_date >= {year}.1.1")
+    flags = f"has_global_variable = theiler_codling_mouth_{region}_global_var "
+    if number != 65:
+        flags += (
+            "has_global_variable = "
+            f"theiler_stopped_codling_mouth_{region}_global_var "
+        )
+    equal(
+        one_block(trigger, "NOR"),
+        tokens(flags + "has_variable = theiler_codling_moth_prevention_var"),
+    )
+    state = f"is_in_geographic_region = geographic_region_{region} "
+    if number != 65:
+        state += "any_scope_building = { is_building_type = building_port } "
+    state += (
+        "any_scope_building = { is_building_type = building_fruit_orchard "
+        f"level >= {level} }}"
+    )
+    equal(one_block(trigger, "any_scope_state"), tokens(state))
+    equal(
+        one_block(one_block(one_block(actual, "immediate"), "random_scope_state"),
+                  "limit"),
+        tokens(state),
+    )
+
+
+def check_codling_trigger() -> None:
+    """Retain Australia's distinct region and the original prevention gate."""
+    actual = source(
+        MOD / "common/scripted_triggers/"
+        "zzzzirmr_science_theiler_scripted_triggers.txt",
+        "REPLACE:theiler_state_can_have_codling_moth_trigger",
+    )
+    regions = "is_in_geographic_region = theiler_geographic_region_codling_moth "
+    for flag, region in (
+        ("north_america", "north_america"), ("oceania", "australia"),
+        ("south_america", "south_america"), ("south_africa", "south_africa"),
+    ):
+        regions += (
+            f"AND = {{ has_global_variable = theiler_codling_mouth_{flag}_global_var "
+            f"is_in_geographic_region = geographic_region_{region} }} "
+        )
+    equal(actual, tokens(
+        f"any_scope_state = {{ OR = {{ {regions} }} "
+        "any_scope_building = { is_building_type = building_fruit_orchard } "
+        "owner = { theiler_has_codling_moth_prevention_trigger = no } }",
+    ))
+
+
+def check_pest_condition(name: str) -> None:
+    """Keep four chance branches only; never move potato's dead 10x risk to a crop."""
+    actual = source(
+        MOD / "common/harvest_condition_types/zzzzirmr_theiler_harvest_condition_types.txt",
+        "REPLACE:" + name,
+    )
+    codling = name == "theiler_codling_moth_condition"
+    building = "is_building_type = building_fruit_orchard" if codling else """
+        OR = { is_building_type = building_wheat_farm
+               is_building_type = building_maize_farm
+               is_building_type = building_rye_farm }
+    """
+    chance = "value = 0.0025 "
+    for level, multiplier in ((5, 2), (10, 2), (15, 2), (20, 5)):
+        chance += (
+            "if = { limit = { any_scope_state = { any_scope_building = { "
+            f"{building} level >= {level} }} }} }} multiply = {multiplier} }} "
+        )
+    equal(one_block(actual, "chance"), tokens(chance))
+    contains(
+        actual, "trigger = { theiler_state_can_have_"
+        + ("codling_moth" if codling else "potato_beetle") + "_trigger = yes }",
+    )
+    equal(
+        one_block(actual, "modifier"),
+        tokens(f"goods_output_{'fruit' if codling else 'grain'}_mult = -0.25"),
+    )
+    equal(
+        one_block(actual, "range"),
+        tokens("integer_range = { min = 3 max = 3 }" if codling else
+               "integer_range = { min = 4 max = 6 }"),
+    )
+    equal(one_block(actual, "duration"), tokens("fixed_range = { min = 250 max = 500 }"))
+    equal(one_block(actual, "intensity"), tokens("fixed_range = { min = 1 max = 1 }"))
+
+
 def check_locale(language: str, mr: Path) -> None:
     """Preserve translations, single-building scope and MR's uranium PM name."""
     path = MOD / f"localization/{language}/zzirmr_{language}.yml"
@@ -807,6 +958,24 @@ def main() -> int:
             args.ir / "events/_ir_decree_events.txt", first_event=True,
         ),
     )
+    check(
+        "agriculture / all four IR orchard PMs produce fruit; rye has no secondary PMG",
+        lambda: check_orchard_sources(args.ir),
+    )
+    for number in (65, 66, 67, 68):
+        check(
+            f"theiler.{number} / orchard introductions, dates, regions, flags and ports",
+            lambda n=number: check_codling_event(n),
+        )
+    check(
+        "codling trigger / orchard, original Australia region and prevention gate",
+        check_codling_trigger,
+    )
+    for name in ("theiler_codling_moth_condition", "theiler_potato_beetle_condition"):
+        check(
+            f"{name} / exact chance scaling, penalties and duration; no dead 10x branch",
+            lambda n=name: check_pest_condition(n),
+        )
     cases = [
         (
             "common/scripted_effects/"
@@ -884,6 +1053,38 @@ def main() -> int:
             "events/MFE/MFE_trade_good_events.txt", f"MFE_trade_good_events.{number}",
             lambda items, n=number: trade_delta(items, n),
         ))
+    # Count the entire cereal+PM conjunction, not just its building-type OR list.
+    for patch_file, upstream_file, names, count in (
+        (
+            "events/zzzzirmr_science_theiler_events.txt",
+            "events/science/theiler_events.txt",
+            tuple(f"theiler.{n}" for n in (65, 66, 67, 68)), 2,
+        ),
+        (
+            "common/scripted_triggers/zzzzirmr_science_theiler_scripted_triggers.txt",
+            "common/scripted_triggers/mr_science_theiler_scripted_triggers.txt",
+            ("theiler_state_can_have_codling_moth_trigger",), 1,
+        ),
+        (
+            "common/harvest_condition_types/zzzzirmr_theiler_harvest_condition_types.txt",
+            "common/harvest_condition_types/theiler_harvest_condition_types.txt",
+            ("theiler_codling_moth_condition",), 4,
+        ),
+    ):
+        for name in names:
+            cases.append((
+                patch_file, upstream_file, name,
+                lambda items, c=count: rewrite(
+                    items, CODLING_PREDICATE,
+                    "is_building_type = building_fruit_orchard", c,
+                ),
+            ))
+    cases.append((
+        "common/harvest_condition_types/zzzzirmr_theiler_harvest_condition_types.txt",
+        "common/harvest_condition_types/theiler_harvest_condition_types.txt",
+        "theiler_potato_beetle_condition",
+        lambda items: rewrite(items, POTATO_BONUS, "", 1),
+    ))
     for patch_file, upstream_file, name in (
         (
             "events/zzzzirmr_sports_vikelas_events.txt",
@@ -938,6 +1139,19 @@ def main() -> int:
             ),
         )
     for filename, names, namespace, bom in (
+        (
+            "events/zzzzirmr_science_theiler_events.txt",
+            tuple(f"theiler.{n}" for n in (65, 66, 67, 68)), "theiler", True,
+        ),
+        (
+            "common/scripted_triggers/zzzzirmr_science_theiler_scripted_triggers.txt",
+            ("REPLACE:theiler_state_can_have_codling_moth_trigger",), "", True,
+        ),
+        (
+            "common/harvest_condition_types/zzzzirmr_theiler_harvest_condition_types.txt",
+            ("REPLACE:theiler_codling_moth_condition",
+             "REPLACE:theiler_potato_beetle_condition"), "", True,
+        ),
         (
             "events/zzzzirmr_sports_vikelas_events.txt", ("vikelas.312",),
             "vikelas", True,

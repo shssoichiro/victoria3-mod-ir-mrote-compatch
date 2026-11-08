@@ -1,0 +1,33 @@
+﻿#by Marco Dandolo
+# From MR common/scripted_triggers/mr_science_theiler_scripted_triggers.txt.
+# IR orchards replace the cereal farms' removed secondary orchard methods.
+
+REPLACE:theiler_state_can_have_codling_moth_trigger = {
+	any_scope_state = {
+		OR = {
+			is_in_geographic_region = theiler_geographic_region_codling_moth
+			AND = {
+				has_global_variable = theiler_codling_mouth_north_america_global_var
+				is_in_geographic_region = geographic_region_north_america
+			}
+			AND = {
+				has_global_variable = theiler_codling_mouth_oceania_global_var
+				is_in_geographic_region = geographic_region_australia
+			}
+			AND = {
+				has_global_variable = theiler_codling_mouth_south_america_global_var
+				is_in_geographic_region = geographic_region_south_america
+			}
+			AND = {
+				has_global_variable = theiler_codling_mouth_south_africa_global_var
+				is_in_geographic_region = geographic_region_south_africa
+			}
+		}
+		any_scope_building = {
+			is_building_type = building_fruit_orchard
+		}
+		owner = {
+			theiler_has_codling_moth_prevention_trigger = no
+		}
+	}
+}

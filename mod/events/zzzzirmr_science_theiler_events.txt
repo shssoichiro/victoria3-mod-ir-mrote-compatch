@@ -1,0 +1,673 @@
+﻿#by Lord R & Marco Dandolo
+# From MR events/science/theiler_events.txt; only orchard eligibility changes.
+
+namespace = theiler
+
+#Theiler 65: Codling Moth spreads to North America
+theiler.65 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+
+	placement = scope:theiler_state_scope
+
+	title = theiler.65.t
+
+	desc = theiler.65.d
+
+	flavor = theiler.65.f
+
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/theiler_pictures/theiler_cydia.dds"
+	}
+
+	icon = "gfx/interface/icons/invention_icons/theiler_microbiology_tech.dds"
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	trigger = {
+		game_date >= 1870.1.1
+		NOR = {
+			has_global_variable = theiler_codling_mouth_north_america_global_var
+			has_variable = theiler_codling_moth_prevention_var
+		}
+		any_scope_state = {
+			is_in_geographic_region = geographic_region_north_america
+			any_scope_building = {
+				is_building_type = building_fruit_orchard
+				level >= 5
+			}
+		}
+	}
+
+	immediate = {
+		random_scope_state = {
+			limit = {
+				is_in_geographic_region = geographic_region_north_america
+				any_scope_building = {
+					is_building_type = building_fruit_orchard
+					level >= 5
+				}
+			}
+			save_scope_as = theiler_state_scope
+		}
+	}
+
+	option = { #
+		name = theiler.65.i #We will have to get used to living with this pest.
+		set_global_variable = theiler_codling_mouth_north_america_global_var
+		scope:theiler_state_scope = {
+			state_region = {
+				start_harvest_condition = theiler_codling_moth_condition
+			}
+		}
+	}
+}
+
+#Theiler 66: Codling Moth spreads to Australia
+theiler.66 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+
+	placement = scope:theiler_state_scope
+
+	title = theiler.66.t
+
+	desc = theiler.66.d
+
+	flavor = theiler.66.f
+
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/theiler_pictures/theiler_cydia.dds"
+	}
+
+	icon = "gfx/interface/icons/invention_icons/theiler_microbiology_tech.dds"
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	trigger = {
+		game_date >= 1880.1.1
+		NOR = {
+			has_global_variable = theiler_codling_mouth_oceania_global_var
+			has_global_variable = theiler_stopped_codling_mouth_oceania_global_var
+			has_variable = theiler_codling_moth_prevention_var
+		}
+		any_scope_state = {
+			is_in_geographic_region = geographic_region_oceania
+			any_scope_building = {
+				is_building_type = building_port
+			}
+			any_scope_building = {
+				is_building_type = building_fruit_orchard
+				level >= 3
+			}
+		}
+	}
+
+	immediate = {
+		random_scope_state = {
+			limit = {
+				is_in_geographic_region = geographic_region_oceania
+				any_scope_building = {
+					is_building_type = building_port
+				}
+				any_scope_building = {
+					is_building_type = building_fruit_orchard
+					level >= 3
+				}
+			}
+			save_scope_as = theiler_state_scope
+		}
+	}
+
+	option = { #
+		name = theiler.65.g #Mobilize every resource to prevent the pest from spreading!
+		default_option = yes
+		scope:theiler_state_scope = {
+			add_modifier = {
+				name = theiler_orchard_burning_modifier
+				years = 1
+			}
+			add_radicals_in_state = {
+				value = 0.15
+				pop_type = farmers
+				pop_type = peasants
+			}
+			state_region = {
+				add_devastation = 5
+			}
+		}
+		random_list = {
+			2 = {
+				set_global_variable = theiler_codling_mouth_oceania_global_var
+				scope:theiler_state_scope = {
+					state_region = {
+						start_harvest_condition = theiler_codling_moth_condition
+					}
+				}
+				trigger_event = { id = theiler.70 }
+			}
+			1 = {
+				set_global_variable = {
+					name = theiler_stopped_codling_mouth_oceania_global_var
+					years = 10
+				}
+				trigger_event = { id = theiler.69 }
+				modifier = {
+					if = {
+						limit = {
+							OR = {
+								theiler_has_biologist_trigger = yes
+								mendelejew_has_chemist = yes
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							theiler_has_biologist_trigger = yes
+							mendelejew_has_chemist = yes
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_early_pesticides_tech
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_modern_pesticides_tech
+						}
+						add = 1
+					}
+				}
+			}
+		}
+	}
+
+	option = { #
+		name = theiler.65.h #Our scientists will find a solution.
+		trigger = {
+			OR = {
+				theiler_has_biologist_trigger = yes
+				mendelejew_has_chemist = yes
+			}
+		}
+		random_list = {
+			2 = {
+				set_global_variable = theiler_codling_mouth_oceania_global_var
+				scope:theiler_state_scope = {
+					state_region = {
+						start_harvest_condition = theiler_codling_moth_condition
+					}
+				}
+				trigger_event = { id = theiler.70 }
+			}
+			0 = {
+				set_global_variable = {
+					name = theiler_stopped_codling_mouth_oceania_global_var
+					years = 10
+				}
+				trigger_event = { id = theiler.69 }
+				modifier = {
+					if = {
+						limit = {
+							OR = {
+								theiler_has_biologist_trigger = yes
+								mendelejew_has_chemist = yes
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							theiler_has_biologist_trigger = yes
+							mendelejew_has_chemist = yes
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_early_pesticides_tech
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_modern_pesticides_tech
+						}
+						add = 1
+					}
+				}
+			}
+		}
+	}
+
+	option = { #
+		name = theiler.65.i #We will have to get used to living with this pest.
+		set_global_variable = theiler_codling_mouth_oceania_global_var
+		scope:theiler_state_scope = {
+			state_region = {
+				start_harvest_condition = theiler_codling_moth_condition
+			}
+		}
+		scope:theiler_state_scope = {
+			add_radicals_in_state = {
+				value = 0.3
+				pop_type = farmers
+				pop_type = peasants
+			}
+		}
+	}
+}
+
+#Theiler 67: Codling Moth spreads to South Africa
+theiler.67 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+
+	placement = scope:theiler_state_scope
+
+	title = theiler.66.t
+
+	desc = theiler.67.d
+
+	flavor = theiler.66.f
+
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/theiler_pictures/theiler_cydia.dds"
+	}
+
+	icon = "gfx/interface/icons/invention_icons/theiler_microbiology_tech.dds"
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	trigger = {
+		game_date >= 1890.1.1
+		NOR = {
+			has_global_variable = theiler_codling_mouth_south_africa_global_var
+			has_global_variable = theiler_stopped_codling_mouth_south_africa_global_var
+			has_variable = theiler_codling_moth_prevention_var
+		}
+		any_scope_state = {
+			is_in_geographic_region = geographic_region_south_africa
+			any_scope_building = {
+				is_building_type = building_port
+			}
+			any_scope_building = {
+				is_building_type = building_fruit_orchard
+				level >= 3
+			}
+		}
+	}
+
+	immediate = {
+		random_scope_state = {
+			limit = {
+				is_in_geographic_region = geographic_region_south_africa
+				any_scope_building = {
+					is_building_type = building_port
+				}
+				any_scope_building = {
+					is_building_type = building_fruit_orchard
+					level >= 3
+				}
+			}
+			save_scope_as = theiler_state_scope
+		}
+	}
+
+	option = { #
+		name = theiler.65.g #Mobilize every resource to prevent the pest from spreading!
+		default_option = yes
+		scope:theiler_state_scope = {
+			add_modifier = {
+				name = theiler_orchard_burning_modifier
+				years = 1
+			}
+			add_radicals_in_state = {
+				value = 0.15
+				pop_type = farmers
+				pop_type = peasants
+			}
+			state_region = {
+				add_devastation = 5
+			}
+		}
+		random_list = {
+			2 = {
+				set_global_variable = theiler_codling_mouth_south_africa_global_var
+				scope:theiler_state_scope = {
+					state_region = {
+						start_harvest_condition = theiler_codling_moth_condition
+					}
+				}
+				trigger_event = { id = theiler.70 }
+			}
+			1 = {
+				set_global_variable = {
+					name = theiler_stopped_codling_mouth_south_africa_global_var
+					years = 10
+				}
+				trigger_event = { id = theiler.69 }
+				modifier = {
+					if = {
+						limit = {
+							OR = {
+								theiler_has_biologist_trigger = yes
+								mendelejew_has_chemist = yes
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							theiler_has_biologist_trigger = yes
+							mendelejew_has_chemist = yes
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_early_pesticides_tech
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_modern_pesticides_tech
+						}
+						add = 1
+					}
+				}
+			}
+		}
+	}
+
+	option = { #
+		name = theiler.65.h #Our scientists will find a solution.
+		trigger = {
+			OR = {
+				theiler_has_biologist_trigger = yes
+				mendelejew_has_chemist = yes
+			}
+		}
+		random_list = {
+			2 = {
+				set_global_variable = theiler_codling_mouth_south_africa_global_var
+				scope:theiler_state_scope = {
+					state_region = {
+						start_harvest_condition = theiler_codling_moth_condition
+					}
+				}
+				trigger_event = { id = theiler.70 }
+			}
+			0 = {
+				set_global_variable = {
+					name = theiler_stopped_codling_mouth_south_africa_global_var
+					years = 10
+				}
+				trigger_event = { id = theiler.69 }
+				modifier = {
+					if = {
+						limit = {
+							OR = {
+								theiler_has_biologist_trigger = yes
+								mendelejew_has_chemist = yes
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							theiler_has_biologist_trigger = yes
+							mendelejew_has_chemist = yes
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_early_pesticides_tech
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_modern_pesticides_tech
+						}
+						add = 1
+					}
+				}
+			}
+		}
+	}
+
+	option = { #
+		name = theiler.65.i #We will have to get used to living with this pest.
+		set_global_variable = theiler_codling_mouth_south_africa_global_var
+		scope:theiler_state_scope = {
+			state_region = {
+				start_harvest_condition = theiler_codling_moth_condition
+			}
+		}
+		scope:theiler_state_scope = {
+			add_radicals_in_state = {
+				value = 0.3
+				pop_type = farmers
+				pop_type = peasants
+			}
+		}
+	}
+}
+
+#Theiler 68: Codling Moth spreads to South America
+theiler.68 = {
+	dlc = dlc_morgenrote
+
+	type = country_event
+
+	placement = scope:theiler_state_scope
+
+	title = theiler.66.t
+
+	desc = theiler.68.d
+
+	flavor = theiler.66.f
+
+	duration = 3
+
+	event_image = {
+		texture = "gfx/event_pictures/theiler_pictures/theiler_cydia.dds"
+	}
+
+	icon = "gfx/interface/icons/invention_icons/theiler_microbiology_tech.dds"
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	trigger = {
+		game_date >= 1900.1.1
+		NOR = {
+			has_global_variable = theiler_codling_mouth_south_america_global_var
+			has_global_variable = theiler_stopped_codling_mouth_south_america_global_var
+			has_variable = theiler_codling_moth_prevention_var
+		}
+		any_scope_state = {
+			is_in_geographic_region = geographic_region_south_america
+			any_scope_building = {
+				is_building_type = building_port
+			}
+			any_scope_building = {
+				is_building_type = building_fruit_orchard
+				level >= 3
+			}
+		}
+	}
+
+	immediate = {
+		random_scope_state = {
+			limit = {
+				is_in_geographic_region = geographic_region_south_america
+				any_scope_building = {
+					is_building_type = building_port
+				}
+				any_scope_building = {
+					is_building_type = building_fruit_orchard
+					level >= 3
+				}
+			}
+			save_scope_as = theiler_state_scope
+		}
+	}
+
+	option = { #
+		name = theiler.65.g #Mobilize every resource to prevent the pest from spreading!
+		default_option = yes
+		scope:theiler_state_scope = {
+			add_modifier = {
+				name = theiler_orchard_burning_modifier
+				years = 1
+			}
+			add_radicals_in_state = {
+				value = 0.15
+				pop_type = farmers
+				pop_type = peasants
+			}
+			state_region = {
+				add_devastation = 5
+			}
+		}
+		random_list = {
+			2 = {
+				set_global_variable = theiler_codling_mouth_south_america_global_var
+				scope:theiler_state_scope = {
+					state_region = {
+						start_harvest_condition = theiler_codling_moth_condition
+					}
+				}
+				trigger_event = { id = theiler.70 }
+			}
+			1 = {
+				set_global_variable = {
+					name = theiler_stopped_codling_mouth_south_america_global_var
+					years = 10
+				}
+				trigger_event = { id = theiler.69 }
+				modifier = {
+					if = {
+						limit = {
+							OR = {
+								theiler_has_biologist_trigger = yes
+								mendelejew_has_chemist = yes
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							theiler_has_biologist_trigger = yes
+							mendelejew_has_chemist = yes
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_early_pesticides_tech
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_modern_pesticides_tech
+						}
+						add = 1
+					}
+				}
+			}
+		}
+	}
+
+	option = { #
+		name = theiler.65.h #Our scientists will find a solution.
+		trigger = {
+			OR = {
+				theiler_has_biologist_trigger = yes
+				mendelejew_has_chemist = yes
+			}
+		}
+		random_list = {
+			2 = {
+				set_global_variable = theiler_codling_mouth_south_america_global_var
+				scope:theiler_state_scope = {
+					state_region = {
+						start_harvest_condition = theiler_codling_moth_condition
+					}
+				}
+				trigger_event = { id = theiler.70 }
+			}
+			0 = {
+				set_global_variable = {
+					name = theiler_stopped_codling_mouth_south_america_global_var
+					years = 10
+				}
+				trigger_event = { id = theiler.69 }
+				modifier = {
+					if = {
+						limit = {
+							OR = {
+								theiler_has_biologist_trigger = yes
+								mendelejew_has_chemist = yes
+							}
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							theiler_has_biologist_trigger = yes
+							mendelejew_has_chemist = yes
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_early_pesticides_tech
+						}
+						add = 1
+					}
+					if = {
+						limit = {
+							has_technology_researched = theiler_modern_pesticides_tech
+						}
+						add = 1
+					}
+				}
+			}
+		}
+	}
+
+	option = { #
+		name = theiler.65.i #We will have to get used to living with this pest.
+		set_global_variable = theiler_codling_mouth_south_america_global_var
+		scope:theiler_state_scope = {
+			state_region = {
+				start_harvest_condition = theiler_codling_moth_condition
+			}
+		}
+		scope:theiler_state_scope = {
+			add_radicals_in_state = {
+				value = 0.3
+				pop_type = farmers
+				pop_type = peasants
+			}
+		}
+	}
+}
