@@ -130,11 +130,13 @@ entire upstream mod stack is error-free.
 - Keep overrides definition-scoped. Existing `common/` overrides use `REPLACE:`;
   the new `irmr_pmg_uranium_glass` group is additive. Do not shadow whole upstream
   files. Preserve IDs, source attribution, thresholds, and unrelated fields.
-- Root `events/` files use bare IDs and namespaces. MR is the later-definition
-  case used here; IR decree events use first-definition precedence, so
-  `__irmr_decree_events.txt` must sort before `_ir_decree_events.txt`. The PMG patch
-  must sort after both MR's injection file and IR's `zir_industry.txt`. Recheck
-  actual engine behavior independently of launcher order.
+- Keep patch event files at the root of `events/`, with bare IDs and namespaces.
+  The first loaded event definition wins. Root files load before subfolders, so
+  the patch's root events precede MR's nested events, regardless of `zzz` prefixes.
+  IR's decree file is also at the root, so `__irmr_decree_events.txt` must sort
+  before `_ir_decree_events.txt`. The PMG patch must sort after both MR's injection
+  file and IR's `zir_industry.txt`. Recheck actual engine behavior independently
+  of launcher order.
 - Save scripts and localization as UTF-8 with BOM. Keep localization headers,
   filename suffixes, and complete key sets aligned across all 11 languages.
 - After upstream updates, re-read affected definitions and rerun source comparisons.
